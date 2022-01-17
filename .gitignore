@@ -1,0 +1,23 @@
+# GITIGNORE List
+.env
+.config.yaml
+tags
+node_modules
+.history
+
+# Exclude binnaries
+*.exe
+*.dll
+*.log
+*.so
+*.dylib
+*.db
+
+# Exclude test
+*.test
+
+# Go Patch
+/tmp/
+/.tmp/
+/Godeps/
+dist/*

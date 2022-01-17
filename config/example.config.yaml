@@ -1,0 +1,26 @@
+database:
+  username : "postgres"
+  password : ""
+  hostname : "localhost"
+  port     : "5432"
+  dbname   : "postgres"
+  ssl_mode : false
+  log_mode : true
+
+server:
+  domain_name                   : "mywebsite.com"
+  port                          : "8000"
+  secret_key                    : "my-secret-key-here"
+  access_token_expire_duration  : 1
+  refresh_token_expire_duration : 1
+  server_mode                   : "development"
+  welcome_message               : true
+
+account:
+  minimal_password_length : 8
+
+logger:
+  database_log_name : ".database.log"
+  server_log_name   : ".server.log"
+  access_log_name   : ".access.log"
+

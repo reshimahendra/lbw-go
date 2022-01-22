@@ -8,6 +8,9 @@ const (
     // ErrDatabase is error code for database error
     ErrDatabase = iota + 800 
 
+    // ErrDatabaseConfiguration is error code for unproper database configuration
+    ErrDatabaseConfiguration
+
     // ErrDatabaseTransactionNil is error code for nil database transaction
     ErrDatabaseTransactionNil
 
@@ -44,6 +47,9 @@ const (
 const (
     // ErrDatabaseMsg is error message for database error
     ErrDatabaseMsg = "database error" 
+
+    // ErrDatabaseConfigurationMsg is error message for unproper database configuration
+    ErrDatabaseConfigurationMsg = "database configuration error"
 
     // ErrDatabaseTransactionNilMsg is error message for database transaction nil
     ErrDatabaseTransactionNilMsg = "database transaction nil" 

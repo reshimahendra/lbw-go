@@ -21,48 +21,19 @@ var (
     basePath = filepath.Join(filepath.Dir(base), "../..")
 )
 
-// DatabaseConfiguration is configuration setup for database
-type DatabaseConfiguration struct {
-    DBName   string
-    Username string
-    Password string
-    Hostname string
-    Port     string
-    SSLMode  bool
-    LogMode  bool
-}
-
-// ServerConfiguration is configuration setup for server
-type ServerConfiguration struct {
-    DomainName                 string
-    Port                       string
-    SecretKey                  string
-    MinimumSecureKeyLength     int
-    AccessTokenExpireDuration  int64
-    RefreshTokenExpireDuration int64
-    LimitCountPerRequest       float64
-    ServerMode                 string
-    WelcomeMessage             bool
-}
-
-// AccountConfiguration is configuration setup for user account
-type AccountConfiguration struct {
-    MinimumPasswordLength int
-}
-
-// LoggerConfiguration is configuration setup for logger/ log generator
-type LoggerConfiguration struct {
-    DatabaseLogName string
-    ServerLogName   string
-    AccessLogName   string
-}
-
 // Configuration is main configuration wrapper
 type Configuration struct{
-    Server ServerConfiguration
-    Database DatabaseConfiguration
-    Account AccountConfiguration
-    Logger LoggerConfiguration
+    // Server is server configuration
+    Server Server
+
+    // Database is database configuration
+    Database Database
+   
+    // Account is account configuration
+    Account Account
+
+    // Logger is logger configuration
+    Logger Logger
 }
 
 // Get will get configuration setting
@@ -81,12 +52,13 @@ func Setup() (err error) {
     viper.AddConfigPath(filepath.Join(basePath, "config"))
     viper.AddConfigPath("./config")
 
-    // try ro read config
+    // try ro read config file
     if err = viper.ReadInConfig(); err != nil {
         logger.Errorf("error reading config file: %v\n", err)
         return err
     }
 
+    // unmarshal from the yaml file to Configuration struct
     if err = viper.Unmarshal(&c); err != nil {
         logger.Errorf("error unable to decode config into struct: %v\n", err)
         return err

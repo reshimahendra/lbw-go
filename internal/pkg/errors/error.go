@@ -53,6 +53,7 @@ func Message(code uint) (message string) {
     switch code {
         // database error
         case ErrDatabase                : message = ErrDatabaseMsg 
+        case ErrDatabaseConfiguration   : message = ErrDatabaseConfigurationMsg 
         case ErrDatabaseTransactionNil  : message = ErrDatabaseTransactionNilMsg 
         case ErrDatabaseRollback        : message = ErrDatabaseRollbackMsg 
         case ErrDatabasePoolNil         : message = ErrDatabasePoolNilMsg 

@@ -4,21 +4,28 @@ import (
 	"context"
 
 	"github.com/reshimahendra/lbw-go/internal/domain"
-	"github.com/reshimahendra/lbw-go/internal/interfaces/datastore/user"
+	"github.com/reshimahendra/lbw-go/internal/interfaces"
 )
 
-type UserRoleService interface {
-    Get(ctx context.Context, id int) (*domain.UserRole, error)
+type UserService struct {
+    Store interfaces.IUser
 }
 
-type Service struct {
-    RoleStore user.Datastore
+func NewUserService(rs interfaces.IUser) *UserService{
+    return &UserService{Store: rs}
 }
 
-func NewService(ds user.Datastore) Service{
-    return Service{RoleStore: ds}
+func (s *UserService) Get(ctx context.Context, id int) (*domain.UserResponse, error) {
+    user, err := s.Store.Get(id)
+    if err != nil {
+        return nil, err
+    }
+    
+    
+    return UserToResponse(*user), nil 
 }
 
-func (svc Service) Get(ctx context.Context, id int) (*domain.UserRole, error) {
-    return svc.RoleStore.Get(ctx, id)
+func UserToResponse(u domain.User) *domain.UserResponse {
+    // role, err := New
+   return &domain.UserResponse{}
 }

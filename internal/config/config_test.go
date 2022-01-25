@@ -7,10 +7,10 @@ import (
 )
 
 var (
-    dbname, username, password, hostname, dbport string = "booking", 
+    dbname, username, password, hostname, dbport string = "lbw-go", 
         "lotus", "secret", "localhost", "5432"
     sslmode, logmode bool = false, true
-    domain, port, secretKey string = "lotusbw.com", "8000", "secret"
+    domain, port, secureKey string = "lotusbw.com", "8000", "secret"
     minSecureKeyLen int = 16
     atDur, rtDur int64 = 1, 1
     limitCountReq float64 = 1
@@ -35,10 +35,10 @@ func TestGet(t *testing.T) {
 
     // make sure secret key and db password are the same first
     // we will assert only equal value here
-    secretKey = cfg.Server.SecretKey
+    secureKey = cfg.Server.SecureKey
     password = cfg.Database.Password
 
-    wantDB := DatabaseConfiguration{
+    wantDB := Database{
         DBName   : dbname,
         Username : username,
         Password : password,
@@ -48,10 +48,10 @@ func TestGet(t *testing.T) {
         LogMode  : logmode,
     }
 
-    wantServer := ServerConfiguration{
+    wantServer := Server{
         DomainName                 : domain,
         Port                       : port,
-        SecretKey                  : secretKey,
+        SecureKey                  : secureKey,
         MinimumSecureKeyLength     : minSecureKeyLen,
         AccessTokenExpireDuration  : atDur,
         RefreshTokenExpireDuration : rtDur,
@@ -61,18 +61,18 @@ func TestGet(t *testing.T) {
 
     }
 
-    wantAccount := AccountConfiguration{
+    wantAccount := Account{
         MinimumPasswordLength : minPassLen,
     }
 
-    wantLog := LoggerConfiguration{
+    wantLog := Logger{
         DatabaseLogName : dbLog,
         ServerLogName   : svrLog,
         AccessLogName   : accLog,
     }
 
-    assert.Equal(t, cfg.Database, wantDB)
-    assert.Equal(t, cfg.Server, wantServer)
-    assert.Equal(t, cfg.Account, wantAccount)
-    assert.Equal(t, cfg.Logger, wantLog)
+    assert.Equal(t, wantDB, cfg.Database)
+    assert.Equal(t, wantServer, cfg.Server)
+    assert.Equal(t, wantAccount, cfg.Account)
+    assert.Equal(t, wantLog, cfg.Logger)
 }

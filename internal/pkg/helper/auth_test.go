@@ -73,8 +73,8 @@ func TestGenerateSecureKey(t *testing.T) {
         length int
         wantError bool
     }{
-        {"SuccessA", 16, false},
-        {"FailA", 15, true},
+        {"EXPECT SUCCESS", 16, false},
+        {"EXPECT FAIL key length less than required lenth", 15, true},
     }
 
     for _, tt := range cases {
@@ -98,8 +98,8 @@ func TestHashPassword(t *testing.T) {
     cases := []struct{
         name,password string
     }{
-        {"SuccessA", "1234abcd"},
-        {"SuccessB", "Aj6@1_=8"},
+        {"EXPECT SUCCESS alpha numeric", "1234abcd"},
+        {"EXPECT SUCCESS mix char", "Aj6@1_=8"},
     }
 
     if testing.Short() {

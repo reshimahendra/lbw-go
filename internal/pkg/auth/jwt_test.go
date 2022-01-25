@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/reshimahendra/lbw-go/internal/config"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestCreateToken will testing token create routine
@@ -25,18 +26,18 @@ func TestCreateToken(t *testing.T) {
     _ = config.Get()
     for _, tt := range cases {
         t.Run(tt.name, func(t *testing.T){
-            got, _:= CreateToken(tt.email)
+            got, err := CreateToken(tt.email)
             if err != nil {
                 t.Fatalf("error unexpected: %v", err)
             }
             t.Logf("GOT: %v", got)
-            // if tt.wantErr {
-            //     assert.Error(t, err)
-            //     assert.Nil(t, got)
-            // } else {
-            //     assert.NoError(t, err)
-            //     assert.NotNil(t, got)
-            // }
+            if tt.wantErr {
+                assert.Error(t, err)
+                assert.Nil(t, got)
+            } else {
+                assert.NoError(t, err)
+                assert.NotNil(t, got)
+            }
         })
     }
 }

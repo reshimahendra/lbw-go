@@ -58,6 +58,7 @@ func Message(code uint) (message string) {
         case ErrDatabaseRollback        : message = ErrDatabaseRollbackMsg 
         case ErrDatabasePoolNil         : message = ErrDatabasePoolNilMsg 
         case ErrDataIsEmpty             : message = ErrDataIsEmptyMsg 
+        case ErrDataIsInvalid           : message = ErrDataIsInvalidMsg 
         case ErrDataNotFound            : message = ErrDataNotFoundMsg
         case ErrGettingData             : message = ErrGettingDataMsg
         case ErrSaveDataFail            : message = ErrSaveDataFailMsg

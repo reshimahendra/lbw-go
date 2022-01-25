@@ -11,7 +11,7 @@ import "github.com/reshimahendra/lbw-go/internal/domain"
 // to the database
 type IUserRole interface {
     // Create will execute sql query insert new user record into database
-    Create(input domain.UserRoleRequest) (*domain.UserRole, error)
+    Create(input domain.UserRole) (*domain.UserRole, error)
 
     // Get will execute sql query to get user record from database
     // based on the given id

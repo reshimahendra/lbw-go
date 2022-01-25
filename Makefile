@@ -1,5 +1,7 @@
 test:
 	go test ./... -failfast -cover -short
+tests:
+	go test ./... -v -failfast -cover -short
 test-proof:
 	go test ./... -coverprofile=proof.out -cover -short && go tool cover -html=proof.out 
 show-proof:

@@ -23,8 +23,9 @@ func TestAPIResponse(t *testing.T) {
         message string
         data data 
     }{
-        {"SuccessA", 200, "seccessfull", data{Code: 200, Data: "test success"}},
-        {"SuccessB", 201, "seccessfull", data{Code: 201, Data: "test success"}},
+        {"EXPECT SUCCESS 200", 200, "seccessfull", data{Code: 200, Data: "test success"}},
+        {"EXPECT SUCCESS 201", 201, "seccessfull", data{Code: 201, Data: "test success"}},
+        {"EXPECT FAIL 500", 500, "internal server error", data{Code: 500, Data: "test fail"}},
     }
 
     gin.SetMode(gin.TestMode)
@@ -53,6 +54,7 @@ func TestAPIResponse(t *testing.T) {
     }
 } 
 
+// TestApiErrorResponse for testing error response
 func TestApiErrorResponse(t *testing.T) {
     gin.SetMode(gin.TestMode)
     r := gin.Default()

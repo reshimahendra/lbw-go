@@ -30,10 +30,11 @@ The package used in this project:
 |-- |-- internal
 |-- |-- |-- config
 |-- |-- |-- domain
-|-- |-- |-- |-- repository
+|-- |-- |-- |-- sql
 |-- |-- |-- controller
-|-- |-- |-- |-- handler
-|-- |-- |-- |-- router
+|-- |-- |-- |-- user
+|-- |-- |-- datastore
+|-- |-- |-- |-- user
 |-- |-- |-- interfaces
 |-- |-- |-- pkg
 |-- |-- log

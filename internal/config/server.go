@@ -18,11 +18,11 @@ type Server struct {
     // Port is the port used by the server
     Port                       string
 
-    // SecretKey is secret key to make auth token
-    SecretKey                  string
+    // SecureKey is secret key to make auth token
+    SecureKey                  string
 
-    // MinimumSecretKeyLength is the minimum length required for the secret key
-    MinimumSecretKeyLength     int
+    // MinimumSecureKeyLength is the minimum length required for the secret key
+    MinimumSecureKeyLength     int
 
     // AccessTokenExpireDuration is valid duration for the token before expired
     AccessTokenExpireDuration  int64
@@ -42,14 +42,15 @@ type Server struct {
 
 // SetMode is to set server mode 
 func (s *Server) SetMode(mode string) (error) {
-    // mode = strings.ToLower(mode)
-    if mode != "production" || mode != "development" {
+    mode = strings.ToLower(mode)
+    switch mode {
+    case "production","development":
+        // set ServerMode to new mode
+        if s.ServerMode != mode {
+            s.ServerMode = mode
+        }
+    default: 
         return errors.New("server mode value must be 'production' or 'development'")
-    }
-
-    // set ServerMode to new mode
-    if s.ServerMode != mode {
-        s.ServerMode = mode
     }
 
     return nil
@@ -57,18 +58,19 @@ func (s *Server) SetMode(mode string) (error) {
 
 // GetMode is to get the ServerMode value
 func (s *Server) GetMode() (string, error) {
-    if s.ServerMode != "production" || s.ServerMode != "development" {
-        return "", errors.New("server mode value must be 'production' or 'development'")
+    switch s.ServerMode {
+    case "production","development":
+        return s.ServerMode, nil    
     }
 
-    return s.ServerMode, nil    
+    return "", errors.New("server mode value must be 'production' or 'development'")
 }
 
 // GetSecretKey is to get secret key setting
 func (s *Server) GetSecretKey() (string, error) {
-    if len(s.SecretKey) < s.MinimumSecretKeyLength {
+    if len(s.SecureKey) < s.MinimumSecureKeyLength {
         return "", errors.New("secret key length is less than minimum requirement length")
     }
 
-    return s.SecretKey, nil 
+    return s.SecureKey, nil 
 }

@@ -23,6 +23,9 @@ const (
     // ErrDataEmpty is error code for empty data result
     ErrDataIsEmpty
 
+    // ErrDataIsInvalid is error code for invalid data
+    ErrDataIsInvalid
+
     // ErrDataNotFound is error code for not found data 
     ErrDataNotFound
 
@@ -62,6 +65,9 @@ const (
 
     // ErrDataEmptyMsg is error code for empty data result
     ErrDataIsEmptyMsg = "data is empty"
+
+    // ErrDataIsInvalidMsg is error code for invalid data
+    ErrDataIsInvalidMsg = "data is invalid"
 
     // ErrDataNotFoundMsg is error code for not found data 
     ErrDataNotFoundMsg = "data not found"

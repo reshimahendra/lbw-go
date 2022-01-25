@@ -56,7 +56,7 @@ func CreateToken(email string) (token *TokenDetailsDTO, err error) {
     
     aToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 
-    token.AccessToken, err = aToken.SignedString([]byte(config.Server.SecretKey))
+    token.AccessToken, err = aToken.SignedString([]byte(config.Server.SecureKey))
     if err != nil {
         fmt.Printf("error occur while creating access token: %v\n", err)
         return nil, err
@@ -73,7 +73,7 @@ func CreateToken(email string) (token *TokenDetailsDTO, err error) {
 
     rToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 
-    token.RefreshToken, err = rToken.SignedString([]byte(config.Server.SecretKey))
+    token.RefreshToken, err = rToken.SignedString([]byte(config.Server.SecureKey))
     if err != nil {
         fmt.Printf("error occur while creating refresh token: %v\n", err)
         return nil, err
@@ -97,7 +97,7 @@ func verifyToken(token string) (*jwt.Token, error) {
         if _, ok := verifiedToken.Method.(*jwt.SigningMethodHMAC); !ok {
             return nil, fmt.Errorf("Unexpected signing method: %v", verifiedToken.Header["alg"])
         }
-        return []byte(config.Server.SecretKey), nil
+        return []byte(config.Server.SecureKey), nil
     })
 
     if err != nil {

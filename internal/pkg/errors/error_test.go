@@ -1,11 +1,11 @@
 package errors
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
 
 // TestMessage is for testing error message
 func TestMessage(t *testing.T) {
@@ -41,7 +41,13 @@ func TestError(t *testing.T) {
         code uint
         msg string
     }{
+        {ErrDatabase, ErrDatabaseMsg},
+        {ErrDatabaseConfiguration, ErrDatabaseConfigurationMsg},
+        {ErrDatabaseTransactionNil, ErrDatabaseTransactionNilMsg},
+        {ErrDatabaseRollback, ErrDatabaseRollbackMsg},
+        {ErrDatabasePoolNil, ErrDatabasePoolNilMsg},
         {ErrDataIsEmpty, ErrDataIsEmptyMsg},
+        {ErrDataIsInvalid, ErrDataIsInvalidMsg},
         {ErrDataNotFound, ErrDataNotFoundMsg},
         {ErrGettingData, ErrGettingDataMsg},
         {ErrSaveDataFail, ErrSaveDataFailMsg},
@@ -100,6 +106,7 @@ func TestErrorExt(t *testing.T) {
             assert.Equal(t, eExt.(*ErrorExt).Code, tt.code)
             assert.Equal(t, eExt.(*ErrorExt).Message, tt.msg)
             assert.Equal(t, eExt.(*ErrorExt).Err, err)
+            assert.Equal(t, eExt.(*ErrorExt).Error(), fmt.Sprintf("Code: %d, Message: %s, Error Detail: %v", tt.code, tt.msg, err))
         })
     }
 }

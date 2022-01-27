@@ -26,4 +26,8 @@ func Router(dbPool db.IDatabase, router *gin.Engine) {
     // router for user.role
     userRole := user.Group("/role")
     userRole.POST("/", userRoleHandler.UserRoleCreateHandler)
+    userRole.PUT("/:id", userRoleHandler.UserRoleUpdateHandler)
+    userRole.DELETE("/:id", userRoleHandler.UserRoleDeletesHandler)
+    userRole.GET("/:id", userRoleHandler.UserRoleGetHandler)
+    userRole.GET("/", userRoleHandler.UserRoleGetsHandler)
 }

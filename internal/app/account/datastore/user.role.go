@@ -7,7 +7,6 @@ package datastore
 
 import (
 	"context"
-	"log"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/reshimahendra/lbw-go/internal/domain"
@@ -21,10 +20,10 @@ const (
         RETURNING id, role_name, description, created_at, updated_at;`
 
     // query command for user.role to get record by its 'id'
-    sqlUserRoleR1 = `SELECT * FROM public.user_role WHERE id = $1 AND deleted_at IS NULL`
+    sqlUserRoleR1 = `SELECT id,role_name,description,created_at,updated_at FROM public.user_role WHERE id = $1 AND deleted_at IS NULL`
 
     // query command for user.role to get all record
-    sqlUserRoleR = `SELECT * FROM public.user_role AND deleted_at IS NULL`
+    sqlUserRoleR = `SELECT id,role_name,description,created_at,updated_at FROM public.user_role WHERE deleted_at IS NULL ORDER BY id`
 
     // query command for user.role to update records based on its 'id' and given new record
     sqlUserRoleU = `UPDATE public.user_role SET 
@@ -91,7 +90,6 @@ func (st *UserRoleStore) Create(input domain.UserRole) (*domain.UserRole, error)
     if err == pgx.ErrNoRows{
         return nil, E.New(E.ErrDataIsEmpty) 
     } else if err != nil {
-        log.Printf("ERROR: %v", err)
         return nil, E.New(E.ErrDatabase)
     }
 
@@ -206,7 +204,6 @@ func (st *UserRoleStore) Delete(id int) (*domain.UserRole, error) {
         &ur.Description,
         &ur.CreatedAt,
         &ur.UpdatedAt,
-        &ur.DeletedAt,
     )
 
     // check if error occur while scanning record

@@ -238,13 +238,10 @@ func TestUserRoleDelete(t *testing.T) {
     // which is returning no error / success operation
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         // prepare mock
-        del := time.Now()
-        headerDel := append(urHeader, "deleted_at")
-        
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserRoleD)).
             WithArgs(ur[0].ID).
-            WillReturnRows(pgxmock.NewRows(headerDel).
-                AddRow(ur[0].ID,ur[0].RoleName,ur[0].Description,ur[0].CreatedAt,ur[0].UpdatedAt,del),
+            WillReturnRows(pgxmock.NewRows(urHeader).
+                AddRow(ur[0].ID,ur[0].RoleName,ur[0].Description,ur[0].CreatedAt,ur[0].UpdatedAt),
             )
 
         // actual method call (method test)
@@ -252,7 +249,6 @@ func TestUserRoleDelete(t *testing.T) {
         got, err := store.Delete(ur[0].ID)
 
         want := ur[0]
-        want.DeletedAt = del
 
         // test verification and validation
         assert.NoError(t, err)

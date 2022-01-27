@@ -6,14 +6,25 @@
 package database
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"time"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/log/logrusadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/reshimahendra/lbw-go/internal/config"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/reshimahendra/lbw-go/internal/pkg/logger"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // IDatabase is interface to pgxpool method
@@ -45,11 +56,31 @@ func NewDBPool(dsn config.Database) (*pgxpool.Pool, func(), error) {
         return nil, f, err 
     }
 
+    // parse connection config
+    cfg, err := pgxpool.ParseConfig(dsn.DSN())
+    if err != nil {
+        logger.Errorf("unable to parse database config: %v", err)
+        return nil, f, err
+    }
+    
+    // prepare logrus logger
+    logDB := &logrus.Logger{
+        Out:          getWriter(),
+        Formatter:    &formatter{},
+        Hooks:        make(logrus.LevelHooks),
+        Level:        logrus.InfoLevel,
+        ExitFunc:     os.Exit,
+        ReportCaller: false,
+    }
+
+    // set logger adapter to logrus
+    cfg.ConnConfig.Logger = logrusadapter.NewLogger(logDB)
+
     // prepare context
     ctx := context.Background()
 
     // tried establish pool connection to database
-    pool, err := pgxpool.Connect(ctx, dsn.DSN())
+    pool, err := pgxpool.ConnectConfig(ctx, cfg)
     if err != nil {
         return nil, f, E.New(E.ErrDatabase)
     }
@@ -96,4 +127,55 @@ func validateDBPool(ctx context.Context, pool *pgxpool.Pool) error{
     logger.Infof("current database: %s", dbVersion)
 
 	return nil
+}
+
+// Log writer
+func getWriter() io.Writer {
+    logDir := "log"
+    logPath := filepath.Join(logDir, viper.GetString("logger.databaseLogName"))
+    file, err := os.OpenFile(
+        logPath,
+        os.O_CREATE | os.O_WRONLY | os.O_APPEND, 
+        0666)
+    if err != nil {
+        return os.Stdout
+    } else {
+        return file
+    }
+}
+// Formatter implements logrus.Formatter interface.
+type formatter struct {
+	prefix string
+}
+
+// Format building log message.
+func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
+	var sb bytes.Buffer
+
+	var newLine = "\n"
+	if runtime.GOOS == "windows" {
+		newLine = "\r\n"
+	}
+
+    var s string = ""
+    count := 1
+    for key, val := range entry.Data {
+        s = s + fmt.Sprintf(" %v: %v ", key, val)
+        count += 1
+        if len(entry.Data) >= count {
+            s = s + "|"
+        }
+    }
+
+	sb.WriteString(strings.ToUpper(entry.Level.String()))
+	sb.WriteString(" ")
+	sb.WriteString(entry.Time.Format(time.RFC3339))
+	sb.WriteString(" ")
+	sb.WriteString(f.prefix)
+	sb.WriteString(entry.Message)
+    sb.WriteString(" ")
+    sb.WriteString(s)
+	sb.WriteString(newLine)
+
+	return sb.Bytes(), nil
 }

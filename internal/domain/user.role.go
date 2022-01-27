@@ -1,3 +1,8 @@
+/*
+    package domain
+    user.role.go
+    - containing user.role model, request dto and response dto struct
+*/
 package domain
 
 import (
@@ -6,11 +11,22 @@ import (
 
 // UserRole is User Role model
 type UserRole struct {
+    // ID is user.role id. it is its primary key
     ID          int         `json:"id"`
-    RoleName    string      `json:"role"`
+
+    // RoleName is user.role role name
+    RoleName    string      `json:"role_name"`
+
+    // Description is the short description of the role
     Description string      `json:"description,omitempty"`
+
+    // CreatedAt is the creation datetime of the role
     CreatedAt   time.Time   `json:"created_at"`
+
+    // UpdatedAt is the last update datetime
     UpdatedAt   time.Time   `json:"updated_at"`
+
+    // DeletedAt is the datetime the role deleted (soft delete)
     DeletedAt   time.Time   `json:"deleted_at,omitempty"`
 }
 
@@ -32,8 +48,11 @@ func (ur *UserRole) ConvertToResponse() *UserRoleResponse{
 
 // UserRoleRequest is user.role request dto
 type UserRoleRequest struct {
-    RoleName    string  `json:"role"`
-    Description string  `json:"description,omitempty"`
+    // RoleName is user.role role name
+    RoleName    string      `json:"role_name"`
+
+    // Description is the short description of the role
+    Description string      `json:"description,omitempty"`
 }
 
 // ConvertToUserRole will convert user.role request dto to user.role
@@ -52,7 +71,7 @@ func (ur *UserRoleRequest) IsValid() bool {
 // UserRoleResponse is user.role response dto
 type UserRoleResponse struct {
     ID          int         `json:"id"`
-    RoleName    string      `json:"role"`
+    RoleName    string      `json:"role_name"`
     Description string      `json:"description,omitempty"`
     CreatedAt   time.Time   `json:"created_at"`
     UpdatedAt   time.Time   `json:"updated_at"`

@@ -1,23 +1,24 @@
 /*
-   package user
+   package datastore 
    user.role.go
    - implementing standar CRUD operation for user.role
 */
-package user
+package datastore 
 
 import (
 	"context"
+	"log"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/reshimahendra/lbw-go/internal/domain"
-	"github.com/reshimahendra/lbw-go/internal/interfaces"
+	"github.com/reshimahendra/lbw-go/internal/database"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 )
 
 const (
     // query command for user.role to Create/ insert new record
-    sqlUserRoleC = `INSERT INTO public.user_role (role_name,description) VALUES($1,$2) 
-        RETURNING id, role_name, description, created_at, updated_at, deleted_at;`
+    sqlUserRoleC = `INSERT INTO public.user_role (role_name,description,updated_at) VALUES($1,$2,CURRENT_TIMESTAMP) 
+        RETURNING id, role_name, description, created_at, updated_at;`
 
     // query command for user.role to get record by its 'id'
     sqlUserRoleR1 = `SELECT * FROM public.user_role WHERE id = $1 AND deleted_at IS NULL`
@@ -28,28 +29,45 @@ const (
     // query command for user.role to update records based on its 'id' and given new record
     sqlUserRoleU = `UPDATE public.user_role SET 
         role_name=$2,description=$3,updated_at=CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL
-        RETURNING id, role_name, description, created_at, updated_at, deleted_at;`
+        RETURNING id, role_name, description, created_at, updated_at;`
 
     // query to 'soft' delete user.role
     sqlUserRoleD = `UPDATE public.user_role SET deleted_at=CURRENT_TIMESTAMP WHERE id = $1
-        RETURNING id, role_name, description, created_at, updated_at, deleted_at;`
+        RETURNING id, role_name, description, created_at, updated_at;`
 )
+
+// IUserRoleStore is user.role interface for CRUD operation directly
+// to the database
+type IUserRoleStore interface {
+    // Create will execute sql query insert new user record into database
+    Create(input domain.UserRole) (*domain.UserRole, error)
+
+    // Get will execute sql query to get user record from database
+    // based on the given id
+    Get(id int) (*domain.UserRole, error)
+
+    // Gets will execute sql query to get all user record from database
+    Gets() ([]*domain.UserRole, error)
+
+    // Update will execute sql query to update user record
+    // based on given input id and input data 
+    Update(id int, input domain.UserRole) (*domain.UserRole, error)
+
+    // Delete will do 'soft delete' instead of deleting the user record 
+    // from the database. Data should be persistant in the database
+    Delete(id int) (*domain.UserRole, error)
+}
 
 // UserRoleStore is instance wrapper for IDatabase interface
 type UserRoleStore struct {
     // DB is instance of IDatabase interface
-    DB interfaces.IDatabase
+    DB database.IDatabase
 }
 
 // NewUserRoleStore will create instance of UserRoleStore
-func NewUserRoleStore(iDB interfaces.IDatabase) *UserRoleStore {
+func NewUserRoleStore(iDB database.IDatabase) *UserRoleStore {
     return &UserRoleStore{DB: iDB}
 }
-
-// Close will close the database connection
-// func (st *UserRoleStore) Close() {
-//     st.DB.Close()
-// }
 
 // Create will insert new user.role record data into the database
 func (st *UserRoleStore) Create(input domain.UserRole) (*domain.UserRole, error) {
@@ -73,6 +91,7 @@ func (st *UserRoleStore) Create(input domain.UserRole) (*domain.UserRole, error)
     if err == pgx.ErrNoRows{
         return nil, E.New(E.ErrDataIsEmpty) 
     } else if err != nil {
+        log.Printf("ERROR: %v", err)
         return nil, E.New(E.ErrDatabase)
     }
 

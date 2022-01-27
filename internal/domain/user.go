@@ -1,3 +1,8 @@
+/*
+    package domain
+    user.go
+    - containing user model, request dto and response dto struct
+*/
 package domain
 
 import (
@@ -9,8 +14,13 @@ import (
 
 // UserStatus is model for status of the user
 type UserStatus struct {
+    // ID is user status id which is its primary key
     ID          int     `json:"id"`
+
+    // StatusName is the name of the status
     StatusName  string  `json:"status"`
+
+    // Description is the short description of the status
     Description string  `json:"description"`
 }
 

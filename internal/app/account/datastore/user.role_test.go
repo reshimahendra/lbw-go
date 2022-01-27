@@ -1,8 +1,8 @@
 /*
-   package user (datastore test)
+   package datastore (test)
    - 'user.role' test unit
 */
-package user
+package datastore 
 
 import (
 	"regexp"

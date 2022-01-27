@@ -1,18 +1,39 @@
 /*
-    package datastore
-    db.go
-    - contain database pool connection preparation and validation for the established pool connection
+   package database
+   db.go
+   - contain database pool connection preparation and validation for the established pool connection
 */
-package datastore
+package database
 
 import (
 	"context"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/reshimahendra/lbw-go/internal/config"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/reshimahendra/lbw-go/internal/pkg/logger"
 )
+
+// IDatabase is interface to pgxpool method
+type IDatabase interface {
+	// Exec acquires a connection from the Pool and executes the given SQL.
+    // SQL can be either a prepared statement name or an SQL string.
+    Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+
+    // QueryRow acquires a connection and executes a query that is expected
+    // to return at most one row (pgx.Row)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
+
+    // Query acquires a connection and executes a query that returns pgx.Rows.
+    // Arguments should be referenced positionally from the SQL string as $1, $2, etc.
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	
+    // Close closes all connections in the pool and rejects future Acquire calls. Blocks until all connections are returned
+    // to pool and closed.
+    Close()    
+}
 
 // NewDBPool is to create new pool connection to database
 func NewDBPool(dsn config.Database) (*pgxpool.Pool, func(), error) {

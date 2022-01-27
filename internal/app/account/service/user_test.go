@@ -1,18 +1,18 @@
-package user
+package service
 
 import (
 	"testing"
 
 	"github.com/reshimahendra/lbw-go/internal/domain"
-	"github.com/reshimahendra/lbw-go/internal/interfaces"
+	"github.com/reshimahendra/lbw-go/internal/database"
 )
 
 
 type MockUserRoleStore struct {
-    DB interfaces.IDatabase
+    DB database.IDatabase
 }
 
-func NewMockUserRoleStore(iDB interfaces.IDatabase) *MockUserRoleStore{
+func NewMockUserRoleStore(iDB database.IDatabase) *MockUserRoleStore{
     return &MockUserRoleStore{DB: iDB}
 }
 

@@ -12,6 +12,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var crandRead = crand.Read
+
 // checkSecureKeyLength will checking length of the 'Secure Key'
 func checkSecureKeyLength(length int) error {
     sLength := viper.GetInt("server.minimumSecureKeyLength")
@@ -55,7 +57,7 @@ func GenerateSecureKey(length int) (string, error) {
         return "", err
     }
 
-    _, err := crand.Read(gsk)
+    _, err := crandRead(gsk)
     if err != nil {
         return fallbackInsecureKey(length)
     }

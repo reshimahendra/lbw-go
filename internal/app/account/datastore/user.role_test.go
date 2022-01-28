@@ -170,7 +170,6 @@ func TestUserRoleGets(t *testing.T) {
         assert.Equal(t, E.New(E.ErrDatabase), err)
         assert.Nil(t, got)
     })
-
 }
 
 // TestUserRoleUpdate will test behaviour of user.role Delete method

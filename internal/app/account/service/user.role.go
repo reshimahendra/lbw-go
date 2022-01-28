@@ -1,8 +1,6 @@
 package service
 
 import (
-	"log"
-
 	"github.com/reshimahendra/lbw-go/internal/app/account/datastore"
 	"github.com/reshimahendra/lbw-go/internal/domain"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
@@ -52,7 +50,6 @@ func (s *UserRoleService) Create(input domain.UserRoleRequest) (*domain.UserRole
     // send request to create new record to datastore for further process
     result, err := s.Store.Create(*input.ConvertToUserRole())
     if err != nil {
-        log.Printf("ERROR: %v", err)
         return nil, err
     }
 

@@ -106,8 +106,8 @@ func (h *UserRoleHandler) UserRoleUpdateHandler(c *gin.Context) {
 
     // get new user.role data from request context
     var uReq = new(domain.UserRoleRequest)
-    if err := c.ShouldBindJSON(uReq); err != nil {
-        e := E.New(E.ErrParamIsInvalid)
+    if err := c.ShouldBindJSON(&uReq); err != nil {
+        e := E.New(E.ErrRequestDataInvalid)
         helper.APIErrorResponse(c, http.StatusBadRequest, e)
         return
     }

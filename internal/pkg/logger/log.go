@@ -18,6 +18,7 @@ import (
 
 var (
     logger = logrus.New()
+    goOS = runtime.GOOS
 
     // get the root directory of our project
     _, base, _, _ = runtime.Caller(0)
@@ -35,9 +36,9 @@ func init() {
 	logger.SetReportCaller(true)
 }
 
-//SetLogLevel will set the log level mode
+// SetLogLevel will set the log level mode
 func el(level logrus.Level) {
-	logger.Level = level
+    logger.Level = level
 }
 
 type Fields logrus.Fields
@@ -75,12 +76,12 @@ func Errorf(format string, args ...interface{}) {
 }
 
 // Fatalf logs a message at 'Fatal' level
-func Fatalf(format string, args ...interface{}) {
-	if logger.Level >= logrus.FatalLevel {
-		entry := logger.WithFields(logrus.Fields{})
-		entry.Fatalf(format, args...)
-	}
-}
+// func Fatalf(format string, args ...interface{}) {
+//     if logger.Level >= logrus.FatalLevel {
+//         entry := logger.WithFields(logrus.Fields{})
+//         entry.Fatalf(format, args...)
+//     }
+// }
 
 // getWriter will get the logfile as the output of our logger
 func getWriter(filepath string) io.Writer {
@@ -103,7 +104,7 @@ func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	var sb bytes.Buffer
 
 	var newLine = "\n"
-	if runtime.GOOS == "windows" {
+	if goOS == "windows" {
 		newLine = "\r\n"
 	}
 

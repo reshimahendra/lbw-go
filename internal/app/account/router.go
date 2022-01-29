@@ -10,6 +10,12 @@ import (
 
 
 func Router(dbPool db.IDatabase, router *gin.Engine) {
+    // user.status layer setup
+    userStatusDatastore := ds.NewUserStatusStore(dbPool)
+    userStatusService := s.NewUserStatusService(userStatusDatastore)
+    userStatusHandler := h.NewUserStatusHandler(userStatusService)
+
+    // user.role layer setup
     userRoleDatastore   := ds.NewUserRoleStore(dbPool)
     userRoleService     := s.NewUserRoleService(userRoleDatastore)
     userRoleHandler     := h.NewUserRoleHandler(userRoleService)
@@ -22,6 +28,11 @@ func Router(dbPool db.IDatabase, router *gin.Engine) {
 
     // Router for User
     // router.POST("/", userHandler.)
+
+    // router for user.status
+    userStatus := user.Group("/status")
+    userStatus.GET("/", userStatusHandler.UserStatusGetsHandler)
+    userStatus.GET("/:id", userStatusHandler.UserStatusGetHandler)
     
     // router for user.role
     userRole := user.Group("/role")

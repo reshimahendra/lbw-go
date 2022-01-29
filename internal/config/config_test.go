@@ -1,3 +1,8 @@
+/*
+   package config
+   config_test.go
+   - testing behaviour of database config
+*/
 package config
 
 import (
@@ -9,17 +14,43 @@ import (
 )
 
 var (
-    dbname, username, password, hostname, dbport string = "lbw-go", 
-        "lotus", "secret", "localhost", "5432"
-    sslmode, logmode bool = false, true
-    domain, port, secureKey string = "lotusbw.com", "8000", "secret"
-    minSecureKeyLen int = 16
-    atDur, rtDur int64 = 1, 1
-    limitCountReq float64 = 1
-    serverMode string = "development"
-    welcomeMsg bool = true
-    minPassLen int = 8
-    dbLog, svrLog, accLog string = ".database.log", ".server.log", ".access.log"
+    // wantDB is temporary Database configuration test value
+    wantDB = Database{
+        DBName   : "lbw-go",
+        Username : "lotus",
+        Password : "secret",
+        Hostname : "localhost",
+        Port     : "5432",
+        SSLMode  : false,
+        LogMode  : true,
+    }
+
+    // wantServer is temporary server configuration test value
+    wantServer = Server{
+        DomainName                 : "lotusbw.com",
+        Port                       : "8000",
+        SecureKey                  : "secure-key-is-a-secret",
+        MinimumSecureKeyLength     : 16,
+        AccessTokenExpireDuration  : 1,
+        RefreshTokenExpireDuration : 1,
+        LimitCountPerRequest       : 1,
+        ServerMode                 : "development",
+        WelcomeMessage             : true,
+
+    }
+
+    // wantAccount is temporary account configuration test value
+    wantAccount = Account{
+        MinimumPasswordLength : 8,
+    }
+
+    // wantLog is temporary logger configuration test value
+    wantLog = Logger{
+        DatabaseLogName : ".database.log",
+        ServerLogName   : ".server.log",
+        AccessLogName   : ".access.log",
+    }
+
 
     // mock func
     viperReadInConfigFunc = viperReadInConfig
@@ -61,47 +92,15 @@ func TestSetup(t *testing.T) {
     })
 }
 
+// TestGet is test for Get() function behaviour
 func TestGet(t *testing.T) {
     cfg := Get()
     assert.NotNil(t, cfg)
 
     // make sure secret key and db password are the same first
     // we will assert only equal value here
-    secureKey = cfg.Server.SecureKey
-    password = cfg.Database.Password
-
-    wantDB := Database{
-        DBName   : dbname,
-        Username : username,
-        Password : password,
-        Hostname : hostname,
-        Port     : dbport,
-        SSLMode  : sslmode,
-        LogMode  : logmode,
-    }
-
-    wantServer := Server{
-        DomainName                 : domain,
-        Port                       : port,
-        SecureKey                  : secureKey,
-        MinimumSecureKeyLength     : minSecureKeyLen,
-        AccessTokenExpireDuration  : atDur,
-        RefreshTokenExpireDuration : rtDur,
-        LimitCountPerRequest       : limitCountReq,
-        ServerMode                 : serverMode,
-        WelcomeMessage             : welcomeMsg,
-
-    }
-
-    wantAccount := Account{
-        MinimumPasswordLength : minPassLen,
-    }
-
-    wantLog := Logger{
-        DatabaseLogName : dbLog,
-        ServerLogName   : svrLog,
-        AccessLogName   : accLog,
-    }
+    cfg.Server.SecureKey = wantServer.SecureKey
+    cfg.Database.Password = wantDB.Password
 
     assert.Equal(t, wantDB, cfg.Database)
     assert.Equal(t, wantServer, cfg.Server)

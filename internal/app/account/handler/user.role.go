@@ -1,3 +1,14 @@
+/* 
+    package handler
+    user.role.go
+    - handler/ interaction layer for user.role
+    - NOTE of method:
+    - -- UserRoleCreateHandler : method to create new user.role record
+    - -- UserRoleGetHandler    : method to get user.role record by id
+    - -- UserRoleGetsHandler   : method to get all user.role record
+    - -- UserRoleUpdateHandler : method to update user.role record
+    - -- UserRoleDeletesHandler: method to soft delete user.role record
+*/
 package handler
 
 import (

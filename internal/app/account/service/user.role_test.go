@@ -1,3 +1,8 @@
+/* 
+    package service
+    user.role_test.go
+    - test unit for user.role
+*/
 package service
 
 import (

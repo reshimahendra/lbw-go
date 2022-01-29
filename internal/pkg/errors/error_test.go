@@ -41,6 +41,10 @@ func TestError(t *testing.T) {
         code uint
         msg string
     }{
+        {ErrServer, ErrServerMsg},
+        {ErrServerMode, ErrServerModeMsg},
+        {ErrServerHost, ErrServerHostMsg},
+        {ErrServerPort, ErrServerPortMsg},
         {ErrDatabase, ErrDatabaseMsg},
         {ErrDatabaseConfiguration, ErrDatabaseConfigurationMsg},
         {ErrDatabaseTransactionNil, ErrDatabaseTransactionNilMsg},

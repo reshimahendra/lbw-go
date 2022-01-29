@@ -1,3 +1,8 @@
+/*
+    package errors
+    handler.go
+    - error constant for handling handler error
+*/
 package errors
 
 const (

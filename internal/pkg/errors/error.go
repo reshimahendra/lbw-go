@@ -51,6 +51,12 @@ func NewExt(code uint, e error) error {
 // Message wiil return error message
 func Message(code uint) (message string) {
     switch code {
+        // server error
+        case ErrServer                  : message = ErrServerMsg 
+        case ErrServerMode              : message = ErrServerModeMsg 
+        case ErrServerHost              : message = ErrServerHostMsg 
+        case ErrServerPort              : message = ErrServerPortMsg 
+
         // database error
         case ErrDatabase                : message = ErrDatabaseMsg 
         case ErrDatabaseConfiguration   : message = ErrDatabaseConfigurationMsg 

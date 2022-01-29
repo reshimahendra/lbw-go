@@ -170,6 +170,36 @@ func TestUserRoleGets(t *testing.T) {
         assert.Equal(t, E.New(E.ErrDatabase), err)
         assert.Nil(t, got)
     })
+
+    // EXPECT FAIL scan data error. Simulated by 
+    // mocking ScanAll func of the pgxscan
+    t.Run("EXPECT FAIL scan data error", func(t *testing.T){
+        // mock inner function pgxscan.ScanAll
+        scanAll := scanAllFunc
+        scanAllFunc = func(dst interface{}, rows pgx.Rows) error {
+            return E.New(E.ErrDatabase)
+        }
+        defer func() {
+            scanAllFunc = scanAll
+        }()
+
+        // prepare mock query
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserRoleR)).
+            WillReturnRows(pgxmock.NewRows(urHeader).
+                AddRow(ur[0].ID,ur[1].RoleName,ur[0].Description,ur[0].CreatedAt,ur[0].UpdatedAt).
+                AddRow(ur[1].ID,ur[1].RoleName,ur[1].Description,ur[1].CreatedAt,ur[1].UpdatedAt).
+                AddRow(ur[2].ID,ur[2].RoleName,ur[2].Description,ur[2].CreatedAt,ur[2].UpdatedAt),
+            )
+
+        // actual method test
+        store := NewUserRoleStore(mock)
+        got, err := store.Gets()
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+
 }
 
 // TestUserRoleUpdate will test behaviour of user.role Delete method

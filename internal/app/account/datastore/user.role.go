@@ -126,34 +126,16 @@ func (st *UserRoleStore) Get(id int) (*domain.UserRole, error) {
 // Gets will get all user.role record from the database
 func (st *UserRoleStore) Gets() ([]*domain.UserRole, error) {
     // execute sql command to get all user.role record
-    result, err := st.DB.Query(context.Background(), sqlUserRoleR)
-
-    // check for error
+    results, err := st.DB.Query(context.Background(), sqlUserRoleR)
     if err == pgx.ErrNoRows{
         return nil, E.New(E.ErrDatabase)
     }
-
-    defer result.Close()
+    defer results.Close()
 
     // make new variable of user.role slice as a container for scanned result query operation
     urs := make([]*domain.UserRole, 0)
-    for result.Next() {
-        ur := new(domain.UserRole)
-        err := result.Scan(
-            &ur.ID,
-            &ur.RoleName,
-            &ur.Description,
-            &ur.CreatedAt,
-            &ur.UpdatedAt,
-        )
-
-        // make sure no error while scanning rows record data
-        if err != nil {
-            return nil, E.New(E.ErrDatabase)
-        }
-
-        // insert scanned user.role record data (ur) to user.role slice(urs)
-        urs = append(urs, ur)
+    if err = scanAllFunc(&urs, results); err != nil {
+        return nil, E.New(E.ErrDatabase)
     }
 
     // return user.role slice(urs) if no error found

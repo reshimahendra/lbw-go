@@ -107,24 +107,24 @@ func validateDBPool(ctx context.Context, pool *pgxpool.Pool) error{
 
     // send info to logger notify that the connection established
     logger.Infof("connect to database successfully")
-    var (
-		currentUser     string
-		dbVersion       string
-	)
+    // var (
+	//     currentUser     string
+	//     dbVersion       string
+	// )
 
     // get connected user and database version information
-	sqlStatement := `select current_user, version();`
-	row := pool.QueryRow(ctx, sqlStatement)
-	err = row.Scan(&currentUser, &dbVersion)
+	// sqlStatement := `select current_user, version();`
+	// row := pool.QueryRow(ctx, sqlStatement)
+	// err = row.Scan(&currentUser, &dbVersion)
 
     // make sure no error occur
-	if err != nil {
-		return E.New(E.ErrDatabase)
-	}
+	// if err != nil {
+	//     return E.New(E.ErrDatabase)
+	// }
 
     // send info log to the logger
-    logger.Infof("current database user: %s", currentUser)
-    logger.Infof("current database: %s", dbVersion)
+    // logger.Infof("current database user: %s", currentUser)
+    // logger.Infof("current database: %s", dbVersion)
 
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/reshimahendra/lbw-go/internal/domain"
+	d "github.com/reshimahendra/lbw-go/internal/domain"
 	"github.com/reshimahendra/lbw-go/internal/database"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 )
@@ -39,22 +39,22 @@ const (
 // to the database
 type IUserRoleStore interface {
     // Create will execute sql query insert new user record into database
-    Create(input domain.UserRole) (*domain.UserRole, error)
+    Create(input d.UserRole) (*d.UserRole, error)
 
     // Get will execute sql query to get user record from database
     // based on the given id
-    Get(id int) (*domain.UserRole, error)
+    Get(id int) (*d.UserRole, error)
 
     // Gets will execute sql query to get all user record from database
-    Gets() ([]*domain.UserRole, error)
+    Gets() ([]*d.UserRole, error)
 
     // Update will execute sql query to update user record
     // based on given input id and input data 
-    Update(id int, input domain.UserRole) (*domain.UserRole, error)
+    Update(id int, input d.UserRole) (*d.UserRole, error)
 
     // Delete will do 'soft delete' instead of deleting the user record 
     // from the database. Data should be persistant in the database
-    Delete(id int) (*domain.UserRole, error)
+    Delete(id int) (*d.UserRole, error)
 }
 
 // UserRoleStore is instance wrapper for IDatabase interface
@@ -69,7 +69,7 @@ func NewUserRoleStore(iDB database.IDatabase) *UserRoleStore {
 }
 
 // Create will insert new user.role record data into the database
-func (st *UserRoleStore) Create(input domain.UserRole) (*domain.UserRole, error) {
+func (st *UserRoleStore) Create(input d.UserRole) (*d.UserRole, error) {
     // execute sql command using QueryRow method
     result := st.DB.QueryRow(context.Background(), sqlUserRoleC,
         input.RoleName, 
@@ -77,7 +77,7 @@ func (st *UserRoleStore) Create(input domain.UserRole) (*domain.UserRole, error)
     ) 
 
     // prepare new user.role container as a return value and scan the query result
-    ur := new(domain.UserRole)
+    ur := new(d.UserRole)
     err := result.Scan(
         &ur.ID,
         &ur.RoleName,
@@ -98,12 +98,12 @@ func (st *UserRoleStore) Create(input domain.UserRole) (*domain.UserRole, error)
 }
 
 // Get will get user.role record from the database based on its 'id'
-func (st *UserRoleStore) Get(id int) (*domain.UserRole, error) {
+func (st *UserRoleStore) Get(id int) (*d.UserRole, error) {
     // execute sql command to get user.role by its 'id'
     result := st.DB.QueryRow(context.Background(), sqlUserRoleR1, id)
 
     // prepare new user.role container as a return value and scan the query result
-    ur := new(domain.UserRole)
+    ur := new(d.UserRole)
     err := result.Scan(
         &ur.ID,
         &ur.RoleName,
@@ -124,7 +124,7 @@ func (st *UserRoleStore) Get(id int) (*domain.UserRole, error) {
 }
 
 // Gets will get all user.role record from the database
-func (st *UserRoleStore) Gets() ([]*domain.UserRole, error) {
+func (st *UserRoleStore) Gets() ([]*d.UserRole, error) {
     // execute sql command to get all user.role record
     results, err := st.DB.Query(context.Background(), sqlUserRoleR)
     if err == pgx.ErrNoRows{
@@ -133,7 +133,7 @@ func (st *UserRoleStore) Gets() ([]*domain.UserRole, error) {
     defer results.Close()
 
     // make new variable of user.role slice as a container for scanned result query operation
-    urs := make([]*domain.UserRole, 0)
+    urs := make([]*d.UserRole, 0)
     if err = scanAllFunc(&urs, results); err != nil {
         return nil, E.New(E.ErrDatabase)
     }
@@ -143,7 +143,7 @@ func (st *UserRoleStore) Gets() ([]*domain.UserRole, error) {
 }
 
 // Update will update user.role record based it 'id' with given new record value
-func (st *UserRoleStore) Update(id int, input domain.UserRole) (*domain.UserRole, error) {
+func (st *UserRoleStore) Update(id int, input d.UserRole) (*d.UserRole, error) {
     // check whether input is invalid
     if !input.IsValid() {
         return nil, E.New(E.ErrDataIsInvalid) 
@@ -155,7 +155,7 @@ func (st *UserRoleStore) Update(id int, input domain.UserRole) (*domain.UserRole
         id, input.RoleName, input.Description)
     
     // prepare new user.role container as a return value and scan the query result
-    var ur = new(domain.UserRole)
+    var ur = new(d.UserRole)
     err := result.Scan(
         &ur.ID,
         &ur.RoleName,
@@ -174,12 +174,12 @@ func (st *UserRoleStore) Update(id int, input domain.UserRole) (*domain.UserRole
 }
 
 // Delete will 'soft' delete user role record data based on its given 'id'
-func (st *UserRoleStore) Delete(id int) (*domain.UserRole, error) {
+func (st *UserRoleStore) Delete(id int) (*d.UserRole, error) {
     // execute sql command to 'soft' delete user.role record
     result := st.DB.QueryRow(context.Background(), sqlUserRoleD, id)
 
     // prepare new user.role container as a return value and scan the query result
-    ur := new(domain.UserRole)
+    ur := new(d.UserRole)
     err := result.Scan(
         &ur.ID,
         &ur.RoleName,

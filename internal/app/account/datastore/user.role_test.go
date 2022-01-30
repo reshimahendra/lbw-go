@@ -11,19 +11,19 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/pashagolub/pgxmock"
-	"github.com/reshimahendra/lbw-go/internal/domain"
+	d "github.com/reshimahendra/lbw-go/internal/domain"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
     urHeader = []string{"id","role_name","description","created_at","updated_at"}
-    ur = []*domain.UserRole{
+    ur = []*d.UserRole{
         {ID : 0, RoleName: "Guest", Description: "Guest role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
         {ID : 1, RoleName: "Superuser", Description: "Superuser role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
         {ID : 2, RoleName: "Admin", Description: "Admin role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
     }
-    errUser = domain.UserRole{ID : 3, RoleName: "FAIL", Description: "FAIL role", CreatedAt: time.Now()}
+    errUser = d.UserRole{ID : 3, RoleName: "FAIL", Description: "FAIL role", CreatedAt: time.Now()}
 )
 
 // Run will prepare our pgxmock connection interface
@@ -233,7 +233,7 @@ func TestUserRoleUpdate(t *testing.T) {
 
         // actual method call (method test)
         store := NewUserRoleStore(mock)
-        got, err := store.Update(1, domain.UserRole{Description:"test role fail"})
+        got, err := store.Update(1, d.UserRole{Description:"test role fail"})
 
         // test verification and validation
         assert.Error(t, err)

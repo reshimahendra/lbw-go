@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/reshimahendra/lbw-go/internal/domain"
+	d "github.com/reshimahendra/lbw-go/internal/domain"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,24 +17,26 @@ import (
 var (
     wantErr bool = false
     urHeader = []string{"id","role_name","description","created_at","updated_at"}
-    ur = []*domain.UserRole{
+    ur = []*d.UserRole{
         {ID : 0, RoleName: "Guest", Description: "Guest role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
         {ID : 1, RoleName: "Superuser", Description: "Superuser role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
         {ID : 2, RoleName: "Admin", Description: "Admin role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
     }
-    errUser = domain.UserRole{ID : 3, RoleName: "FAIL", Description: "FAIL role", CreatedAt: time.Now()}
+    errUser = d.UserRole{ID : 3, RoleName: "FAIL", Description: "FAIL role", CreatedAt: time.Now()}
 )
 
+// mockUserRoleService is mocked userRoleService
 type mockUserRoleService struct {
     t *testing.T
 }
 
+// NewMockUserRoleService is new instance for mockUserRoleService
 func NewMockUserRoleService(t *testing.T) *mockUserRoleService{
     return &mockUserRoleService{t: t}
 }
 
-// Create is mocked Create method from IUserRole interface
-func (s *mockUserRoleService) Create(input domain.UserRole) (*domain.UserRole, error) {
+// Create is mocked Create method to satisfy IUserRoleStore interface
+func (s *mockUserRoleService) Create(input d.UserRole) (*d.UserRole, error) {
     if !input.IsValid() {
         return nil, E.New(E.ErrDataIsInvalid)
     }
@@ -52,8 +54,8 @@ func (s *mockUserRoleService) Create(input domain.UserRole) (*domain.UserRole, e
     return &input, nil
 }
 
-// Get is mocked Get method from IUserRole interface to get user.role record based on its id
-func (s *mockUserRoleService) Get(id int) (*domain.UserRole, error) {
+// Get is mocked Get method to satisfy IUserRoleStore interface
+func (s *mockUserRoleService) Get(id int) (*d.UserRole, error) {
     if wantErr {
         return nil, E.New(E.ErrDataIsEmpty)
     }
@@ -61,8 +63,8 @@ func (s *mockUserRoleService) Get(id int) (*domain.UserRole, error) {
     return ur[id], nil
 }
 
-// Gets is mocked Get method from IUserRole interface to get all user.role record
-func (s *mockUserRoleService) Gets() ([]*domain.UserRole, error) {
+// Gets is mocked Gets method to satisfy IUserRoleStore interface
+func (s *mockUserRoleService) Gets() ([]*d.UserRole, error) {
     if wantErr {
         return nil, E.New(E.ErrDataIsEmpty)
     }
@@ -70,8 +72,8 @@ func (s *mockUserRoleService) Gets() ([]*domain.UserRole, error) {
     return ur, nil
 }
 
-// Update is mocked Update method from IUserRole interface to update certain record
-func (s *mockUserRoleService) Update(id int, input domain.UserRole) (*domain.UserRole, error) {
+// Update is mocked Update method to satisfy IUserRoleStore interface
+func (s *mockUserRoleService) Update(id int, input d.UserRole) (*d.UserRole, error) {
     if wantErr {
         return nil, E.New(E.ErrDatabase)
     }
@@ -79,8 +81,8 @@ func (s *mockUserRoleService) Update(id int, input domain.UserRole) (*domain.Use
     return ur[id], nil
 }
 
-// Delete is mocked Delete method from IUserRole interface to delete certain record
-func (s *mockUserRoleService) Delete(id int) (*domain.UserRole, error) {
+// Delete is mocked Delete method to satisfy IUserRoleStore interface
+func (s *mockUserRoleService) Delete(id int) (*d.UserRole, error) {
     if wantErr {
         return nil, E.New(E.ErrDatabase)
     }
@@ -97,7 +99,7 @@ func TestUserRoleServiceCreate(t *testing.T) {
     // EXPECT SUCCESS will simulated normal operation with no error return
     // this simulation expect all goes as expected
     t.Run("EXPECT SUCCESS", func(t *testing.T){
-        var urReq = new(domain.UserRoleRequest)
+        var urReq = new(d.UserRoleRequest)
         urReq.RoleName = ur[0].RoleName
         urReq.Description = ur[0].Description
 
@@ -110,7 +112,7 @@ func TestUserRoleServiceCreate(t *testing.T) {
     // EXPECT FAIL invalid data will simulated invalid data input with expected 
     // error return is ErrDataIsInvalid. Simulation done by removing 'role_name' field
     t.Run("EXPECT FAIL invalid data", func (t *testing.T) {
-        var urReq = new(domain.UserRoleRequest)
+        var urReq = new(d.UserRoleRequest)
         urReq.Description = ur[0].Description
 
         got, err := service.Create(*urReq)
@@ -125,7 +127,7 @@ func TestUserRoleServiceCreate(t *testing.T) {
     // so the mocked interface return an error 
     t.Run("EXPECT FAIL database error", func (t *testing.T) {
         // prepare new UserRoleRequest instance
-        var urReq = new(domain.UserRoleRequest)
+        var urReq = new(d.UserRoleRequest)
         urReq.RoleName = ur[0].RoleName
 
         // trigger error from the mocked interface
@@ -189,7 +191,7 @@ func TestUserRoleServiceGets(t *testing.T) {
         // actual method call (method to test)
         got, err := service.Gets()
 
-        var want []*domain.UserRoleResponse
+        var want []*d.UserRoleResponse
         for _, urRes := range ur {
             want = append(want, urRes.ConvertToResponse())
         }
@@ -226,7 +228,7 @@ func TestUserRoleServiceUpdate(t *testing.T) {
     // this simulation expect all process goes as expected
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         // prepare new UserRoleRequest instance
-        var urReq = new(domain.UserRoleRequest)
+        var urReq = new(d.UserRoleRequest)
         urReq.RoleName = ur[0].RoleName
         urReq.Description = ur[0].Description
 
@@ -246,7 +248,7 @@ func TestUserRoleServiceUpdate(t *testing.T) {
         wantErr = true
 
         // prepare new UserRoleRequest instance
-        var urReq = new(domain.UserRoleRequest)
+        var urReq = new(d.UserRoleRequest)
 
         // actual method call (tested method)
         got, err := store.Update(ur[0].ID, *urReq)

@@ -1,3 +1,8 @@
+/*
+   service package
+   user.role.go
+   - service/ business layer for user.role model
+*/
 package service
 
 import (

@@ -1,3 +1,8 @@
+/*
+   service package
+   user.go
+   - service/ business layer for user model
+*/
 package service
 
 import (

@@ -61,7 +61,8 @@ func TestUserStoreCreate(t *testing.T) {
     // and response with the inserted data)
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserC)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey).
+            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+                u[0].StatusID,u[0].RoleID).
             WillReturnRows(pgxmock.NewRows(uHeader).
                 AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
                 u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt))
@@ -83,7 +84,8 @@ func TestUserStoreCreate(t *testing.T) {
     // EXPECT FAIL data empty error. Simulated by triggering pgx.ErrNoRows
     t.Run("EXPECT FAIL empty data", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserC)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey).
+            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+                u[0].StatusID,u[0].RoleID).
             WillReturnError(pgx.ErrNoRows)
 
         // actual method test
@@ -98,7 +100,8 @@ func TestUserStoreCreate(t *testing.T) {
     // EXPECT FAIL database error. Simulated by triggering error E.ErrDatabase
     t.Run("EXPECT FAIL database error", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserC)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey).
+            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+                u[0].StatusID,u[0].RoleID).
             WillReturnError(E.New(E.ErrDatabase))
 
         // actual method test
@@ -117,8 +120,7 @@ func TestUserStoreGet(t *testing.T) {
     store := NewUserStore(mock)
 
     // EXPECT SUCCESS is typical test simulation with expectation that
-    // the operation will run normally (successful insert new data and
-    // and response with the inserted data)
+    // the operation will run normally
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserR1)).
             WithArgs(u[0].ID).
@@ -133,6 +135,7 @@ func TestUserStoreGet(t *testing.T) {
         assert.NoError(t, err)
         assert.NotNil(t, got)
     })
+
     // EXPECT FAIL data empty error. Simulated by triggering pgx.ErrNoRows on mock
     t.Run("EXPECT FAIL data is empty error", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserR1)).
@@ -146,7 +149,6 @@ func TestUserStoreGet(t *testing.T) {
         assert.Error(t, err)
         assert.Nil(t, got)
     })
-
 
     // EXPECT FAIL database error. Simulated by triggering E.ErrDatabase on mock
     t.Run("EXPECT FAIL database error", func(t *testing.T){
@@ -170,8 +172,7 @@ func TestUserStoreGets(t *testing.T) {
     store := NewUserStore(mock)
 
     // EXPECT SUCCESS is typical test simulation with expectation that
-    // the operation will run normally (successful insert new data and
-    // and response with the inserted data)
+    // the operation will run normally
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserR)).
             WillReturnRows(pgxmock.NewRows(uHeader).
@@ -236,4 +237,172 @@ func TestUserStoreGets(t *testing.T) {
         assert.Error(t, err)
         assert.Nil(t, got)
     })
+}
+
+// TestUserStoreUpdate is to test behaviour of Update method for user datastore
+func TestUserStoreUpdate(t *testing.T) {
+    // prepare mock and store
+    mock := PrepareMock(t)
+    store := NewUserStore(mock)
+
+    // EXPECT SUCCESS is typical test simulation with expectation that
+    // the operation will run normally (successful update data and
+    // and response with the data result)
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserU)).
+            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+                u[0].StatusID,u[0].RoleID).
+            WillReturnRows(pgxmock.NewRows(uHeader).
+                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt),
+            )
+
+        // actual method call/ test
+        got, err := store.Update(u[0].ID, *u[0])
+
+        // test validation and verification
+        assert.NoError(t, err)
+        assert.NotNil(t, got)
+        assert.Equal(t, u[0].ID, got.ID)
+        assert.Equal(t, u[0].Username, got.Username)
+        assert.Equal(t, u[0].RoleID, got.RoleID)
+        assert.Equal(t, u[0].Email, got.Email)
+    })
+
+    // EXPECT FAIL data empty error. Simulated by triggering pgx.ErrNoRows on mock
+    t.Run("EXPECT FAIL data is empty error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserU)).
+            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+                u[0].StatusID,u[0].RoleID).
+            WillReturnError(pgx.ErrNoRows)
+
+        // actual method
+        got, err := store.Update(u[0].ID, *u[0])
+
+        // validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+
+    // EXPECT FAIL database error. Simulated by triggering E.ErrDatabase on mock
+    t.Run("EXPECT FAIL database error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserU)).
+            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+                u[0].StatusID,u[0].RoleID).
+            WillReturnError(E.New(E.ErrDatabase))
+
+        // actual method
+        got, err := store.Update(u[0].ID, *u[0])
+
+        // validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+}
+
+// TestUserStoreDelete is to test behaviour of Delete method for user datastore
+func TestUserStoreDelete(t *testing.T) {
+    // prepare mock and store
+    mock := PrepareMock(t)
+    store := NewUserStore(mock)
+
+    // EXPECT SUCCESS is typical test simulation with expectation that
+    // the operation will run normally (successful delete data and
+    // and response with the affecteed data)
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserD)).
+            WithArgs(u[0].ID).
+            WillReturnRows(pgxmock.NewRows(uHeader).
+                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt),
+            )
+
+        // actual method call/ test
+        got, err := store.Delete(u[0].ID)
+
+        // test validation and verification
+        assert.NoError(t, err)
+        assert.NotNil(t, got)
+        assert.Equal(t, u[0].ID, got.ID)
+        assert.Equal(t, u[0].Username, got.Username)
+        assert.Equal(t, u[0].RoleID, got.RoleID)
+        assert.Equal(t, u[0].Email, got.Email)
+    })
+
+    // EXPECT FAIL data empty error. Simulated by triggering pgx.ErrNoRows on mock
+    t.Run("EXPECT FAIL data is empty error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserD)).
+            WithArgs(u[0].ID).
+            WillReturnError(pgx.ErrNoRows)
+
+        // actual method
+        got, err := store.Delete(u[0].ID)
+
+        // validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+
+    // EXPECT FAIL database error. Simulated by triggering E.ErrDatabase on mock
+    t.Run("EXPECT FAIL database error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserU)).
+            WithArgs(u[0].ID).
+            WillReturnError(E.New(E.ErrDatabase))
+
+        // actual method
+        got, err := store.Delete(u[0].ID)
+
+        // validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+}
+
+func TestGetUserCredential(t *testing.T) {
+    // prepare mock
+    mock := PrepareMock(t)
+
+    // EXPECT SUCCESS is typical test simulation with expectation that
+    // no error occur
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
+            WithArgs(u[0].ID).
+            WillReturnRows(pgxmock.NewRows([]string{"id","username","passkey","status_id"}).
+                AddRow(u[0].ID,u[0].Username,u[0].PassKey,u[0].StatusID))
+
+        // call actual method to test
+        cred, err := GetCredential(mock, u[0].ID)
+
+        // test validation and verification
+        assert.NoError(t, err)
+        assert.NotNil(t, cred)
+    }) 
+
+    // EXPECT FAIL data empty error. Simulated by returning pgx.ErrNoRows error
+    t.Run("EXPECT FAIL data empty error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
+            WithArgs(u[0].ID).
+            WillReturnError(pgx.ErrNoRows)
+
+        // call actual method to test
+        cred, err := GetCredential(mock, u[0].ID)
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, cred)
+    }) 
+
+    // EXPECT FAIL database error. Simulated by returning E.ErrDatabase error
+    t.Run("EXPECT FAIL database error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
+            WithArgs(u[0].ID).
+            WillReturnError(E.New(E.ErrDatabase))
+
+        // call actual method to test
+        cred, err := GetCredential(mock, u[0].ID)
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, cred)
+    }) 
 }

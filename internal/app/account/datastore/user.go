@@ -22,13 +22,15 @@ import (
 	"github.com/reshimahendra/lbw-go/internal/database"
 	d "github.com/reshimahendra/lbw-go/internal/domain"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
+	"github.com/reshimahendra/lbw-go/internal/pkg/logger"
 )
 
 const (
     // prepare sql command to insert new user record
-    sqlUserC = `INSERT INTO public.users (id,username,firstname,lastname,email,passkey,updated_at) 
-            VALUES ($1,$2,$3,$4,$5,$6,CURRENT_TIMESTAMP) RETURNING id,
-            username,firstname,lastname,email,user_status_id,user_role_id,created_at,updated_at`
+    sqlUserC = `INSERT INTO public.users (id,username,firstname,lastname,email,passkey,updated_at,
+            user_status_id,user_role_id) VALUES ($1,$2,$3,$4,$5,$6,CURRENT_TIMESTAMP,$7,$8) 
+            RETURNING id,username,firstname,lastname,email,user_status_id,user_role_id,
+            created_at,updated_at`
     sqlUserR1 = `SELECT id,username,firstname,lastname,email,user_status_id,user_role_id,
             created_at,updated_at FROM public.users WHERE id = $1 AND deleted_at IS NULL`
     sqlUserR = `SELECT id,username,firstname,lastname,email,user_status_id,user_role_id,
@@ -40,6 +42,7 @@ const (
     sqlUserD = `UPDATE public.users SET updated_at=CURRENT_TIMESTAMP,deleted_at=CURRENT_TIMESTAMP 
             WHERE id=$1 RETURNING id, username,firstname,lastname,email,user_status_id,
             user_role_id,created_at,updated_at`
+    sqlCredentialR = `SELECT id,username,passkey,user_status_id FROM public.users WHERE id=$1`
 )
 
 var (
@@ -54,21 +57,21 @@ type IUserStore interface {
 
     // Get will execute sql query to get user.role record from database
     // based on the given id
-    Get(id int) (*d.User, error)
+    Get(id uuid.UUID) (*d.User, error)
 
     // Gets will execute sql query to get all user.role record from database
     Gets() ([]*d.User, error)
 
     // Update will execute sql query to update user.role record
     // based on given input id and input data 
-    Update(id string, input d.User) (*d.User, error)
+    Update(id uuid.UUID, input d.User) (*d.User, error)
 
     // Delete will do 'soft delete' instead of deleting the user.role record
     // from the database. Data should be persistant in the database
-    Delete(id int) (*d.User, error)
+    Delete(id uuid.UUID) (*d.User, error)
 }
 
-// UserStore interface is instance wrapper for IDatabase interface
+// UserStore is instance wrapper for IDatabase interface
 type UserStore struct {
     // DB is IDatabase interface instance
     DB database.IDatabase
@@ -89,6 +92,8 @@ func (st *UserStore) Create(input d.User) (*d.User, error) {
         input.LastName,
         input.Email,
         input.PassKey,
+        input.StatusID,
+        input.RoleID,
     )
 
     // prepare variable container to be used as the result query container
@@ -164,7 +169,7 @@ func (st *UserStore) Gets() ([]*d.User, error) {
 }
 
 // Update will update user based on given id
-func (st *UserStore) Update(id string, input d.User) (*d.User, error) {
+func (st *UserStore) Update(id uuid.UUID, input d.User) (*d.User, error) {
     // execute sql command to update user record
     result := st.DB.QueryRow(context.Background(), sqlUserU,
         id,
@@ -202,7 +207,7 @@ func (st *UserStore) Update(id string, input d.User) (*d.User, error) {
 }
 
 // Delete will delete user record based on given id
-func (st *UserStore) Delete(id string) (*d.User, error) {
+func (st *UserStore) Delete(id uuid.UUID) (*d.User, error) {
     // execute sql command to delete user record
     result := st.DB.QueryRow(context.Background(), sqlUserD, id)
 
@@ -228,4 +233,30 @@ func (st *UserStore) Delete(id string) (*d.User, error) {
     }
 
     return user, nil
+}
+
+// GetCredential will get user credential data
+func GetCredential(DB database.IDatabase, id uuid.UUID) (*d.UserCredential, error) {
+    cred := new(d.UserCredential)
+    // if err := pgxscan.Get(context.Background(), DB, &cred, sqlCredentialR, id); err != nil{
+    //     logger.Errorf("fail get credential data: %v", err)
+    //     return nil
+    // }
+    err := DB.QueryRow(context.Background(), sqlCredentialR, id).Scan(
+        &cred.ID,
+        &cred.Username,
+        &cred.PassKey,
+        &cred.StatusID,
+    )
+
+    // check if error occur during scan
+    if err == pgx.ErrNoRows{
+        logger.Errorf("fail get credential data: %v", err)
+        return nil, E.New(E.ErrDataIsEmpty)
+    } else if err != nil {
+        logger.Errorf("fail get credential data: %v", err)
+        return nil, E.New(E.ErrDatabase)
+    }
+
+    return cred, nil
 }

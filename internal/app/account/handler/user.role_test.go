@@ -1,9 +1,13 @@
+/*
+   package handler
+   user.role_test.go
+   - testing behaviour of user.role handler
+*/
 package handler
 
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -91,7 +95,6 @@ func (m *mockUserRoleHandler) Update(id int, input d.UserRoleRequest) (*d.UserRo
     }
 
     if !input.IsValid() {
-        log.Printf("INVALID input: %v\n", input)
         return nil, E.New(E.ErrRequestDataInvalid)
     }
 

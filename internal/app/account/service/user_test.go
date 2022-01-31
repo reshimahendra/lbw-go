@@ -19,8 +19,8 @@ var (
         {
             ID        : uuid.New(),
             Username  : "leonard",
-            FirstName : "Leo",
-            LastName  : "Singa",
+            Firstname : "Leo",
+            Lastname  : "Singa",
             Email     : "leo@gmail.com",
             PassKey   : "secret",
             StatusID  : 1,
@@ -31,8 +31,8 @@ var (
         {
             ID        : uuid.New(),
             Username  : "jennydoe",
-            FirstName : "Jenny",
-            LastName  : "Doe",
+            Firstname : "Jenny",
+            Lastname  : "Doe",
             Email     : "jenny@gmail.com",
             PassKey   : "secret",
             StatusID  : 1,
@@ -62,7 +62,7 @@ func (m *mockUserService) Create(input d.User) (*d.User, error) {
         return nil, E.New(E.ErrEmailIsInvalid)
     }
     if wantErr {
-        return nil, E.New(E.ErrSaveDataFail)
+        return nil, E.New(E.ErrInsertDataFail)
     }
     return &input, nil
 }
@@ -149,7 +149,7 @@ func TestUserServiceCreate(t *testing.T) {
         assert.NoError(t, err)
         assert.NotNil(t, got)
         assert.Equal(t, u[0].Username, got.Username)
-        assert.Equal(t, u[0].FirstName, got.FirstName)
+        assert.Equal(t, u[0].Firstname, got.Firstname)
         assert.Equal(t, u[0].Email, got.Email)
     })
 
@@ -158,7 +158,7 @@ func TestUserServiceCreate(t *testing.T) {
         // prepare invalid data
         invalidUser := convertToRequest(*u[0])
         invalidUser.Email = ""
-        invalidUser.FirstName = ""
+        invalidUser.Firstname = ""
 
         // actual method call
         got, err := service.Create(*invalidUser)
@@ -300,7 +300,7 @@ func TestUserServiceUpdate(t *testing.T) {
         assert.NoError(t, err)
         assert.Equal(t, u[0].ID, got.ID)
         assert.Equal(t, u[0].Username, got.Username)
-        assert.Equal(t, u[0].FirstName, got.FirstName)
+        assert.Equal(t, u[0].Firstname, got.Firstname)
         assert.Equal(t, u[0].Email, got.Email)
     })
 
@@ -383,7 +383,7 @@ func TestUserServiceUpdate(t *testing.T) {
     t.Run("EXPECT FAIL invalid data error", func(t *testing.T){
         // prepare invalid user data
         invalidUser := convertToRequest(*u[0])
-        invalidUser.FirstName = ""
+        invalidUser.Firstname = ""
 
         // actual method call (method to test)
         got, err := service.Update(u[0].ID.String(), *invalidUser)
@@ -473,8 +473,8 @@ func convertToRequest(u d.User) *d.UserRequest{
     return &d.UserRequest{
         ID        : u.ID,
         Username  : u.Username,
-        FirstName : u.FirstName,
-        LastName  : u.LastName,
+        Firstname : u.Firstname,
+        Lastname  : u.Lastname,
         Email     : u.Email,
         PassKey   : u.PassKey,
         StatusID  : u.StatusID,

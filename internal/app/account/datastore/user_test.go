@@ -26,8 +26,8 @@ var (
         {
             ID        : uuid.New(),
             Username  : "leonard",
-            FirstName : "Leo",
-            LastName  : "Singa",
+            Firstname : "Leo",
+            Lastname  : "Singa",
             Email     : "leo@gmail.com",
             PassKey   : "secret",
             StatusID  : 1,
@@ -38,8 +38,8 @@ var (
         {
             ID        : uuid.New(),
             Username  : "jennydoe",
-            FirstName : "Jenny",
-            LastName  : "Doe",
+            Firstname : "Jenny",
+            Lastname  : "Doe",
             Email     : "jenny@gmail.com",
             PassKey   : "secret",
             StatusID  : 1,
@@ -61,10 +61,10 @@ func TestUserStoreCreate(t *testing.T) {
     // and response with the inserted data)
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserC)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+            WithArgs(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,u[0].PassKey,
                 u[0].StatusID,u[0].RoleID).
             WillReturnRows(pgxmock.NewRows(uHeader).
-                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                AddRow(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,
                 u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt))
 
         // actual method
@@ -84,7 +84,7 @@ func TestUserStoreCreate(t *testing.T) {
     // EXPECT FAIL data empty error. Simulated by triggering pgx.ErrNoRows
     t.Run("EXPECT FAIL empty data", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserC)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+            WithArgs(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,u[0].PassKey,
                 u[0].StatusID,u[0].RoleID).
             WillReturnError(pgx.ErrNoRows)
 
@@ -100,7 +100,7 @@ func TestUserStoreCreate(t *testing.T) {
     // EXPECT FAIL database error. Simulated by triggering error E.ErrDatabase
     t.Run("EXPECT FAIL database error", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserC)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+            WithArgs(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,u[0].PassKey,
                 u[0].StatusID,u[0].RoleID).
             WillReturnError(E.New(E.ErrDatabase))
 
@@ -125,7 +125,7 @@ func TestUserStoreGet(t *testing.T) {
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserR1)).
             WithArgs(u[0].ID).
             WillReturnRows(pgxmock.NewRows(uHeader).
-                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                AddRow(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,
                 u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt))
 
         // actual method
@@ -176,9 +176,9 @@ func TestUserStoreGets(t *testing.T) {
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserR)).
             WillReturnRows(pgxmock.NewRows(uHeader).
-                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                AddRow(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,
                 u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt).
-                AddRow(u[1].ID,u[1].Username,u[1].FirstName,u[1].LastName,u[1].Email,
+                AddRow(u[1].ID,u[1].Username,u[1].Firstname,u[1].Lastname,u[1].Email,
                 u[1].StatusID,u[1].RoleID,u[1].CreatedAt,u[1].UpdatedAt),
             )
 
@@ -224,9 +224,9 @@ func TestUserStoreGets(t *testing.T) {
         // prepare mock query
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserR)).
             WillReturnRows(pgxmock.NewRows(uHeader).
-                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                AddRow(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,
                 u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt).
-                AddRow(u[1].ID,u[1].Username,u[1].FirstName,u[1].LastName,u[1].Email,
+                AddRow(u[1].ID,u[1].Username,u[1].Firstname,u[1].Lastname,u[1].Email,
                 u[1].StatusID,u[1].RoleID,u[1].CreatedAt,u[1].UpdatedAt),
             )
 
@@ -250,10 +250,10 @@ func TestUserStoreUpdate(t *testing.T) {
     // and response with the data result)
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserU)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+            WithArgs(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,u[0].PassKey,
                 u[0].StatusID,u[0].RoleID).
             WillReturnRows(pgxmock.NewRows(uHeader).
-                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                AddRow(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,
                 u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt),
             )
 
@@ -272,7 +272,7 @@ func TestUserStoreUpdate(t *testing.T) {
     // EXPECT FAIL data empty error. Simulated by triggering pgx.ErrNoRows on mock
     t.Run("EXPECT FAIL data is empty error", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserU)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+            WithArgs(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,u[0].PassKey,
                 u[0].StatusID,u[0].RoleID).
             WillReturnError(pgx.ErrNoRows)
 
@@ -287,7 +287,7 @@ func TestUserStoreUpdate(t *testing.T) {
     // EXPECT FAIL database error. Simulated by triggering E.ErrDatabase on mock
     t.Run("EXPECT FAIL database error", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserU)).
-            WithArgs(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,u[0].PassKey,
+            WithArgs(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,u[0].PassKey,
                 u[0].StatusID,u[0].RoleID).
             WillReturnError(E.New(E.ErrDatabase))
 
@@ -313,7 +313,7 @@ func TestUserStoreDelete(t *testing.T) {
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserD)).
             WithArgs(u[0].ID).
             WillReturnRows(pgxmock.NewRows(uHeader).
-                AddRow(u[0].ID,u[0].Username,u[0].FirstName,u[0].LastName,u[0].Email,
+                AddRow(u[0].ID,u[0].Username,u[0].Firstname,u[0].Lastname,u[0].Email,
                 u[0].StatusID,u[0].RoleID,u[0].CreatedAt,u[0].UpdatedAt),
             )
 

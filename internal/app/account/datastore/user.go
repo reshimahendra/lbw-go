@@ -29,19 +29,18 @@ const (
     // prepare sql command to insert new user record
     sqlUserC = `INSERT INTO public.users (id,username,firstname,lastname,email,passkey,updated_at,
             user_status_id,user_role_id) VALUES ($1,$2,$3,$4,$5,$6,CURRENT_TIMESTAMP,$7,$8) 
-            RETURNING id,username,firstname,lastname,email,user_status_id,user_role_id,
+            RETURNING id,username,firstname,lastname,email,status_id,role_id,
             created_at,updated_at`
-    sqlUserR1 = `SELECT id,username,firstname,lastname,email,user_status_id,user_role_id,
+    sqlUserR1 = `SELECT id,username,firstname,lastname,email,status_id,role_id,
             created_at,updated_at FROM public.users WHERE id = $1 AND deleted_at IS NULL`
-    sqlUserR = `SELECT id,username,firstname,lastname,email,user_status_id,user_role_id,
+    sqlUserR = `SELECT id,username,firstname,lastname,email,status_id,role_id,
             created_at,updated_at FROM public.users WHERE deleted_at IS NULL ORDER BY created_at`
-    sqlUserU = `UPDATE public.users SET username=$2,firstname=$3,lastname=$4,
-            email=$5,passkey=$6,user_status_id=$7,user_role_id=$8,updated_at=CURRENT_TIMESTAMP
-            WHERE id=$1 ON CONFLICT DO NOTHING RETURNING id,username,firstname,lastname,email,
-            user_status_id,user_role_id,created_at,updated_at`
+    sqlUserU = `UPDATE public.users SET username=$2,firstname=$3,lastname=$4,email=$5,passkey=$6,
+            status_id=$7,role_id=$8,updated_at=CURRENT_TIMESTAMP WHERE id=$1 RETURNING 
+            id,username,firstname,lastname,email,status_id,role_id,created_at,updated_at`
     sqlUserD = `UPDATE public.users SET updated_at=CURRENT_TIMESTAMP,deleted_at=CURRENT_TIMESTAMP 
-            WHERE id=$1 RETURNING id, username,firstname,lastname,email,user_status_id,
-            user_role_id,created_at,updated_at`
+            WHERE id=$1 RETURNING id, username,firstname,lastname,email,status_id,
+            role_id,created_at,updated_at`
     sqlCredentialR = `SELECT id,username,passkey,user_status_id FROM public.users WHERE id=$1`
 )
 
@@ -88,8 +87,8 @@ func (st *UserStore) Create(input d.User) (*d.User, error) {
     result := st.DB.QueryRow(context.Background(),sqlUserC,
         input.ID,
         input.Username,
-        input.FirstName,
-        input.LastName,
+        input.Firstname,
+        input.Lastname,
         input.Email,
         input.PassKey,
         input.StatusID,
@@ -101,8 +100,8 @@ func (st *UserStore) Create(input d.User) (*d.User, error) {
     err := result.Scan(
         &user.ID,
         &user.Username,
-        &user.FirstName,
-        &user.LastName,
+        &user.Firstname,
+        &user.Lastname,
         &user.Email,
         &user.StatusID,
         &user.RoleID,
@@ -112,9 +111,11 @@ func (st *UserStore) Create(input d.User) (*d.User, error) {
 
     // check if error occur during scan
     if err == pgx.ErrNoRows{
+        logger.Errorf("user.create datastore fail: %v", err)
         return nil, E.New(E.ErrDataIsEmpty)
     } else if err != nil {
-        return nil, err //E.New(E.ErrDatabase)
+        logger.Errorf("user.create datastore fail: %v", err)
+        return nil, E.New(E.ErrDatabase)
     }
 
     return user, nil
@@ -130,8 +131,8 @@ func (st *UserStore) Get(id uuid.UUID) (*d.User, error) {
     err := result.Scan(
         &user.ID,
         &user.Username,
-        &user.FirstName,
-        &user.LastName,
+        &user.Firstname,
+        &user.Lastname,
         &user.Email,
         &user.StatusID,
         &user.RoleID,
@@ -141,9 +142,11 @@ func (st *UserStore) Get(id uuid.UUID) (*d.User, error) {
 
     // check if error occur during scan
     if err == pgx.ErrNoRows{
+        logger.Errorf("user.get datastore fail: %v", err)
         return nil, E.New(E.ErrDataIsEmpty)
     } else if err != nil {
-        return nil, err //E.New(E.ErrDatabase)
+        logger.Errorf("user.get datastore fail: %v", err)
+        return nil, E.New(E.ErrDatabase)
     }
 
     return user, nil
@@ -154,18 +157,20 @@ func (st *UserStore) Gets() ([]*d.User, error) {
     // execute sql command to retreive user record
     results, err := st.DB.Query(context.Background(), sqlUserR)
     if err != nil {
+        logger.Errorf("user.gets datastore fail: %v", err)
         return nil, E.New(E.ErrDataIsEmpty)
     }
     defer results.Close()
 
     // prepare variable for data scan container
-    usr := make([]*d.User, 0)
-    if err = scanAllFunc(&usr, results); err != nil { 
+    users := make([]*d.User, 0)
+    if err = scanAllFunc(&users, results); err != nil { 
+        logger.Errorf("user.gets datastore scan fail: %v", err)
         return nil, E.New(E.ErrDatabase)
     }
 
     // return user slice
-    return usr, nil
+    return users, nil
 }
 
 // Update will update user based on given id
@@ -174,8 +179,8 @@ func (st *UserStore) Update(id uuid.UUID, input d.User) (*d.User, error) {
     result := st.DB.QueryRow(context.Background(), sqlUserU,
         id,
         input.Username,
-        input.FirstName,
-        input.LastName,
+        input.Firstname,
+        input.Lastname,
         input.Email,
         input.PassKey,
         input.StatusID,
@@ -187,8 +192,8 @@ func (st *UserStore) Update(id uuid.UUID, input d.User) (*d.User, error) {
     err := result.Scan(
         &user.ID,
         &user.Username,
-        &user.FirstName,
-        &user.LastName,
+        &user.Firstname,
+        &user.Lastname,
         &user.Email,
         &user.StatusID,
         &user.RoleID,
@@ -198,8 +203,10 @@ func (st *UserStore) Update(id uuid.UUID, input d.User) (*d.User, error) {
 
     // check if error occur during scan
     if err == pgx.ErrNoRows{
+        logger.Errorf("user.update datastore fail: %v", err)
         return nil, E.New(E.ErrDataIsEmpty)
     } else if err != nil {
+        logger.Errorf("user.update datastore fail: %v", err)
         return nil, E.New(E.ErrDatabase)
     }
 
@@ -216,8 +223,8 @@ func (st *UserStore) Delete(id uuid.UUID) (*d.User, error) {
     err := result.Scan(
         &user.ID,
         &user.Username,
-        &user.FirstName,
-        &user.LastName,
+        &user.Firstname,
+        &user.Lastname,
         &user.Email,
         &user.StatusID,
         &user.RoleID,
@@ -227,8 +234,10 @@ func (st *UserStore) Delete(id uuid.UUID) (*d.User, error) {
 
     // check if error occur during scan
     if err == pgx.ErrNoRows{
+        logger.Errorf("user.delete datastore fail: %v", err)
         return nil, E.New(E.ErrDataIsEmpty)
     } else if err != nil {
+        logger.Errorf("user.delete datastore fail: %v", err)
         return nil, E.New(E.ErrDatabase)
     }
 

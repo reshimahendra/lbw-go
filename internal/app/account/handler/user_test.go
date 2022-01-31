@@ -173,7 +173,7 @@ func TestUserCreateHandler(t *testing.T) {
         // validation and verification
         assert.Equal(t, http.StatusOK, writer.Code)
         assert.Contains(t, string(writer.Body.Bytes()[:]), string(want[:]))
-        assert.Contains(t, string(writer.Body.Bytes()[:]), "success inserting new user data") 
+        assert.Contains(t, string(writer.Body.Bytes()[:]), "success inserting user data") 
     })
 
     // EXPECT FAIL bind json error. Simulation done by removing request body so 
@@ -195,7 +195,7 @@ func TestUserCreateHandler(t *testing.T) {
 
         // validation and verification
         assert.Equal(t, http.StatusBadRequest, writer.Code)
-        assert.Contains(t, string(writer.Body.Bytes()[:]), E.ErrDataIsInvalidMsg)
+        assert.Contains(t, string(writer.Body.Bytes()[:]), E.ErrRequestDataInvalidMsg)
     })
 
     // EXPECT FAIL insert error. Simulation done by removing some required field to make 
@@ -231,7 +231,7 @@ func TestUserCreateHandler(t *testing.T) {
     })
 }
 
-// TestUserGetHandler will test behaviour of UserRoleGetHandler
+// TestUserGetHandler will test behaviour of UserGetHandler
 func TestUserGetHandler(t *testing.T) {
     // prepare the test
     handler := NewTestUserHandler(t)
@@ -244,7 +244,7 @@ func TestUserGetHandler(t *testing.T) {
         
         // add test context param with key "id"
         context.Params = gin.Params{
-            {Key:"id", Value:"1"},
+            {Key:"id", Value: u[1].ID.String()},
         }
 
         // inject json to request body
@@ -262,7 +262,7 @@ func TestUserGetHandler(t *testing.T) {
         // test validation and verification
         assert.Equal(t, http.StatusOK, writer.Code)
         assert.Contains(t, string(writer.Body.Bytes()[:]), string(want[:]))
-        assert.Contains(t, string(writer.Body.Bytes()[:]), "success get user data")
+        assert.Contains(t, string(writer.Body.Bytes()[:]), "success getting user data")
     })
 
     // EXPECT FAIL get data error. Simulated by inserting non existing id
@@ -284,6 +284,228 @@ func TestUserGetHandler(t *testing.T) {
         // set wantErr to force error return
         wantErr = true
         handler.UserGetHandler(context)
+        wantErr = false
+
+        assert.Equal(t, http.StatusInternalServerError, writer.Code)
+    })
+}
+
+// TestUserGetsHandler will test behaviour of UserGetsHandler
+func TestUserGetsHandler(t *testing.T) {
+    // prepare the test
+    handler := NewTestUserHandler(t)
+
+    // EXPECT SUCCESS will simulated normal operation with no error return
+    // this simulation expect all goes as expected
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        // prepare request/ response / gin context
+        writer, context := NewTestWriterContext()
+        
+        // inject json to request body
+        var err error = nil
+        context.Request, err = http.NewRequest("GET", "/", nil)
+        assert.NoError(t, err)
+
+        // actual method call
+        handler.UserGetsHandler(context)
+
+        // prepare expected data for test comparison
+        want, err := json.Marshal(u)
+        assert.NoError(t, err)
+
+        // test validation and verification
+        assert.Equal(t, http.StatusOK, writer.Code)
+        assert.Contains(t, string(writer.Body.Bytes()[:]), string(want[:]))
+        assert.Contains(t, string(writer.Body.Bytes()[:]), "success getting user data")
+    })
+
+    // EXPECT FAIL get data error. Simulated by inserting non existing id
+    t.Run("EXPECT FAIL get data error", func(t *testing.T) {
+        // prepare request/ response / gin context
+        writer, context := NewTestWriterContext()
+        
+        // inject json to request body
+        var err error = nil
+        context.Request, err = http.NewRequest("GET", "/", nil)
+        assert.NoError(t, err)
+
+        // actual method call
+        // set wantErr to force error return
+        wantErr = true
+        handler.UserGetsHandler(context)
+        wantErr = false
+
+        assert.Equal(t, http.StatusInternalServerError, writer.Code)
+    })
+}
+
+// TestUserUpdateHandler will test behaviour of UserUpdateHandler method of handler layer
+func TestUserUpdateHandler(t *testing.T) {
+    // prepare the test handler 
+    handler := NewTestUserHandler(t)
+
+    // EXPECT SUCCESS will simulated normal operation with no error return
+    // this simulation expect all goes as expected
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        // prepare request/ response / gin context
+        // this is shared func, it is located in user.role_test.go
+        writer, context := NewTestWriterContext()
+
+        // add test context param with key "id"
+        context.Params = gin.Params{
+            {Key:"id", Value:u[0].ID.String()},
+        }
+
+        // prepare mock with ur[0] values
+        req := new(d.UserRequest)
+        req.Username  = u[0].Username
+        req.FirstName = u[0].FirstName
+        req.LastName  = u[0].LastName
+        req.Email     = u[0].Email
+        req.PassKey   = "secret"
+        req.StatusID  = u[0].StatusID
+        req.RoleID    = u[0].RoleID
+
+        uJSON, err := json.Marshal(req)
+        assert.NoError(t, err)
+
+        // inject json to request body
+        context.Request, err = http.NewRequest("PUT", "/:id", bytes.NewBuffer(uJSON))
+        assert.NoError(t, err)
+
+        // set content type to json
+        context.Request.Header.Add("content-type", "application/json")
+
+        // actual method handler call
+        handler.UserUpdateHandler(context)
+
+        // prepare expected data for test comparison
+        want, err := json.Marshal(u[0])
+        assert.NoError(t, err)
+
+        // validation and verification
+        assert.Equal(t, http.StatusOK, writer.Code)
+        assert.Contains(t, string(writer.Body.Bytes()[:]), string(want[:]))
+        assert.Contains(t, string(writer.Body.Bytes()[:]), "success updating user data") 
+    })
+
+    // EXPECT FAIL bind json error. Simulation done by removing request body so 
+    // reading request data will be error
+    t.Run("EXPECT FAIL bind json error", func(t *testing.T){
+        // prepare request/ response / gin context
+        writer, context := NewTestWriterContext()
+
+        // add test context param with key "id"
+        context.Params = gin.Params{
+            {Key:"id", Value:u[0].ID.String()},
+        }
+
+        // inject json to request body
+        var err error = nil
+        context.Request, err = http.NewRequest("PUT", "/:id", nil)
+        assert.NoError(t, err)
+
+        // set content type to json
+        context.Request.Header.Add("content-type", "application/json")
+
+        // actual method handler call
+        handler.UserUpdateHandler(context)
+
+        // validation and verification
+        assert.Equal(t, http.StatusBadRequest, writer.Code)
+        assert.Contains(t, string(writer.Body.Bytes()[:]), E.ErrRequestDataInvalidMsg)
+    })
+
+    // EXPECT FAIL insert error. Simulation done by removing some required field to make 
+    // request data invalid
+    t.Run("EXPECT FAIL insert record error", func(t *testing.T){
+        // prepare request/ response / gin context
+        writer, context := NewTestWriterContext()
+
+        // add test context param with key "id"
+        context.Params = gin.Params{
+            {Key:"id", Value:u[0].ID.String()},
+        }
+
+        // prepare mock with ur[0] values
+        req := new(d.UserRequest)
+        req.FirstName = u[0].FirstName
+        req.LastName  = u[0].LastName
+        req.Email     = u[0].Email
+        req.PassKey   = "secret"
+
+        uRoleJSON, err := json.Marshal(req)
+        assert.NoError(t, err)
+
+        // inject json to request body
+        context.Request, err = http.NewRequest("PUT", "/:id", bytes.NewBuffer(uRoleJSON))
+        assert.NoError(t, err)
+
+        // set content type to json
+        context.Request.Header.Add("content-type", "application/json")
+
+        // actual method handler call
+        handler.UserUpdateHandler(context)
+
+        // validation and verification
+        assert.Equal(t, http.StatusInternalServerError, writer.Code)
+        assert.Contains(t, string(writer.Body.Bytes()[:]), E.ErrRequestDataInvalidMsg)
+    })
+}
+
+// TestUserDeleteHandler will test behaviour of UserDeleteHandler
+func TestUserDeleteHandler(t *testing.T) {
+    // prepare the test
+    handler := NewTestUserHandler(t)
+
+    // EXPECT SUCCESS will simulated normal operation with no error return
+    // this simulation expect all goes as expected
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        // prepare request/ response / gin context
+        writer, context := NewTestWriterContext()
+        
+        // add test context param with key "id"
+        context.Params = gin.Params{
+            {Key:"id", Value: u[0].ID.String()},
+        }
+
+        // inject json to request body
+        var err error = nil
+        context.Request, err = http.NewRequest("DELETE", "/:id", nil)
+        assert.NoError(t, err)
+
+        // actual method call
+        handler.UserDeleteHandler(context)
+
+        // prepare expected data for test comparison
+        want, err := json.Marshal(u[0])
+        assert.NoError(t, err)
+
+        // test validation and verification
+        assert.Equal(t, http.StatusOK, writer.Code)
+        assert.Contains(t, string(writer.Body.Bytes()[:]), string(want[:]))
+        assert.Contains(t, string(writer.Body.Bytes()[:]), "success deleting user data")
+    })
+
+    // EXPECT FAIL get data error. Simulated by inserting non existing id
+    t.Run("EXPECT FAIL get data error", func(t *testing.T) {
+        // prepare request/ response / gin context
+        writer, context := NewTestWriterContext()
+        
+        // add test context param with key "id"
+        context.Params = gin.Params{
+            {Key:"id", Value:u[0].ID.String()},
+        }
+
+        // inject json to request body
+        var err error = nil
+        context.Request, err = http.NewRequest("DELETE", "/:id", nil)
+        assert.NoError(t, err)
+
+        // actual method call
+        // set wantErr to force error return
+        wantErr = true
+        handler.UserDeleteHandler(context)
         wantErr = false
 
         assert.Equal(t, http.StatusInternalServerError, writer.Code)

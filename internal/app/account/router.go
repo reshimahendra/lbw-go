@@ -20,14 +20,20 @@ func Router(dbPool db.IDatabase, router *gin.Engine) {
     userRoleService     := s.NewUserRoleService(userRoleDatastore)
     userRoleHandler     := h.NewUserRoleHandler(userRoleService)
 
-    // userDatastore       := ds.NewUserStore(dbPool)
-    // userService         := s.NewUserService(userDatastore)
-    // userHandler         := h.NewUserHandler(userService)
+    // user layer setup
+    userDatastore       := ds.NewUserStore(dbPool)
+    userService         := s.NewUserService(userDatastore)
+    userHandler         := h.NewUserHandler(userService)
 
+    // app router group
     user := router.Group("/account")
 
     // Router for User
-    // router.POST("/", userHandler.)
+    user.POST("/", userHandler.UserCreateHandler)
+    user.PUT("/:id", userHandler.UserUpdateHandler)
+    user.DELETE("/:id", userHandler.UserDeleteHandler)
+    user.GET("/:id", userHandler.UserGetHandler)
+    user.GET("/", userHandler.UserGetsHandler)
 
     // router for user.status
     userStatus := user.Group("/status")

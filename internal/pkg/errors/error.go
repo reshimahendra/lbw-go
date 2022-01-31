@@ -67,7 +67,7 @@ func Message(code uint) (message string) {
         case ErrDataIsInvalid           : message = ErrDataIsInvalidMsg 
         case ErrDataNotFound            : message = ErrDataNotFoundMsg
         case ErrGettingData             : message = ErrGettingDataMsg
-        case ErrSaveDataFail            : message = ErrSaveDataFailMsg
+        case ErrInsertDataFail          : message = ErrInsertDataFailMsg
         case ErrUpdateDataFail          : message = ErrUpdateDataFailMsg 
         case ErrDeleteDataFail          : message = ErrDeleteDataFailMsg
         case ErrDataAlreadyExist        : message = ErrDataAlreadyExistMsg

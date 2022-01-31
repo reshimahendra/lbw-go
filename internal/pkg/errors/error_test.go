@@ -17,9 +17,9 @@ func TestMessage(t *testing.T) {
         {ErrDataIsEmpty, ErrDataIsEmptyMsg, false},
         {ErrDataNotFound, ErrDataNotFoundMsg, false},
         {ErrGettingData, ErrGettingDataMsg, false},
-        {ErrSaveDataFail, ErrSaveDataFailMsg, false},
-        {ErrSaveDataFail, "the message different", true},
-        {1, ErrSaveDataFailMsg, true},
+        {ErrInsertDataFail, ErrInsertDataFailMsg, false},
+        {ErrInsertDataFail, "the message different", true},
+        {1, ErrInsertDataFailMsg, true},
     }
 
     for _, tt := range cases {
@@ -54,7 +54,7 @@ func TestError(t *testing.T) {
         {ErrDataIsInvalid, ErrDataIsInvalidMsg},
         {ErrDataNotFound, ErrDataNotFoundMsg},
         {ErrGettingData, ErrGettingDataMsg},
-        {ErrSaveDataFail, ErrSaveDataFailMsg},
+        {ErrInsertDataFail, ErrInsertDataFailMsg},
         {ErrUpdateDataFail, ErrUpdateDataFailMsg},
         {ErrDeleteDataFail, ErrDeleteDataFailMsg},
         {ErrDataAlreadyExist, ErrDataAlreadyExistMsg},

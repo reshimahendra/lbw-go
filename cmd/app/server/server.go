@@ -26,12 +26,13 @@ func Run() {
     if err != nil {
         logger.Errorf("error loading server mode: %v", err)
     }
-    
+
     // prepare gin engine
     var router *gin.Engine
     if mode == "production" {
         gin.SetMode(gin.ReleaseMode)
         router = gin.New()
+	    router.SetTrustedProxies(config.Get().Server.TrustedProxies)
         router.Use(gin.Logger())
         router.Use(gin.Recovery())
     } else {

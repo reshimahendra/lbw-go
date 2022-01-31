@@ -33,6 +33,9 @@ type Server struct {
     // LimitCountPerRequest is the limit count that allowed per request
     LimitCountPerRequest       float64
 
+    // TrustedProxies is all trusted proxies
+    TrustedProxies             []string
+
     // ServerMode is server mode option, value is "production" aor "development"
     ServerMode                 string
 

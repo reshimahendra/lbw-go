@@ -1,7 +1,7 @@
 /*
-    package domain
-    user.go
-    - containing user model, request dto and response dto struct
+   package domain
+   user.go
+   - containing user model, request dto and response dto struct
 */
 package domain
 
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/reshimahendra/lbw-go/internal/pkg/logger"
 )
 
 // User is user model
@@ -20,16 +21,16 @@ type User struct {
     Username    string    `json:"username"`
 
     // FirstName is the first name of the user
-    FirstName   string    `json:"first_name"`
+    Firstname   string    `json:"firstname"`
 
     // LastName is the last name for the user
-    LastName    string    `json:"last_name"`
+    Lastname    string    `json:"lastname"`
 
     // email is the valid email of the user
     Email       string    `json:"email"`
 
     // PassKey is the password for the account
-    PassKey     string    `json:"password"`
+    PassKey     string    `json:"passkey"`
 
     // StatusID is id of status held by user
     // ("0=inactive", "1=active", "2=suspended", "3=banned")
@@ -56,7 +57,7 @@ func (u *User) IsValid() bool {
     return  u.ID.String() != "" &&
             u.Username    != "" &&
             u.PassKey     != "" &&
-            u.FirstName   != "" &&
+            u.Firstname   != "" &&
             u.Email       != ""
 }
 
@@ -66,8 +67,8 @@ func (u *User) ConvertToResponse() *UserResponse{
     return &UserResponse{
         ID        : u.ID,
         Username  : u.Username,
-        FirstName : u.FirstName,
-        LastName  : u.LastName,
+        Firstname : u.Firstname,
+        Lastname  : u.Lastname,
         Email     : u.Email,
         StatusID  : u.StatusID,
         RoleID    : u.RoleID,
@@ -97,16 +98,16 @@ type UserRequest struct {
     Username    string    `json:"username"`
 
     // FirstName is the first name of the user
-    FirstName   string    `json:"first_name"`
+    Firstname   string    `json:"firstname"`
 
     // LastName is the last name for the user
-    LastName    string    `json:"last_name"`
+    Lastname    string    `json:"lastname,omitempty"`
 
     // email is the valid email of the user
     Email       string    `json:"email"`
 
     // PassKey is the password for the account
-    PassKey     string    `json:"password"`
+    PassKey     string    `json:"passkey"`
 
     // StatusID is id of status held by user
     // ("0=inactive", "1=active", "2=suspended", "3=banned")
@@ -118,10 +119,11 @@ type UserRequest struct {
 
 // IsValid() method will check whether the user request data is validity
 func (u *UserRequest) IsValid() bool {
+    logger.Infof("user Request data: %v", u)
     return  u.ID.String() != "" &&
             u.Username    != "" &&
             u.PassKey     != "" &&
-            u.FirstName   != "" &&
+            u.Firstname   != "" &&
             u.Email       != ""
 }
 
@@ -130,8 +132,8 @@ func (u *UserRequest) RequestToUser() *User{
     return &User{
         ID        : u.ID,
         Username  : u.Username,
-        FirstName : u.FirstName,
-        LastName  : u.LastName,
+        Firstname : u.Firstname,
+        Lastname  : u.Lastname,
         Email     : u.Email,
         PassKey   : u.PassKey,
         StatusID  : u.StatusID,
@@ -148,10 +150,10 @@ type UserResponse struct {
     Username  string        `json:"username"`
 
     // FirstName is the first name of the user
-    FirstName string        `json:"first_name"`
+    Firstname string        `json:"firstname"`
 
     // LastName is the last name for the user
-    LastName  string        `json:"last_name"`
+    Lastname  string        `json:"lastname"`
 
     // email is the valid email of the user
     Email     string        `json:"email"`
@@ -181,7 +183,7 @@ type UserCredential struct {
     StatusID  int           `json:"status_id"`
 
     // PassKey is the password for the account
-    PassKey   string    `json:"password"`
+    PassKey   string    `json:"passkey"`
 }
 
 // IsValid is to ceck whether credential is valid

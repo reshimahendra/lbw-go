@@ -19,7 +19,7 @@ import (
 )
 
 var (
-    uHeader = []string{"id","username","first_name","last_name","email",
+    uHeader = []string{"id","username","firstname","lastname","email",
         "status_id","role_id","created_at","updated_at"}
 
     u = []*d.User{

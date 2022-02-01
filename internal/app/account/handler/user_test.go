@@ -25,8 +25,8 @@ var(
         {
             ID        : uuid.New(),
             Username  : "leonard",
-            FirstName : "Leo",
-            LastName  : "Singa",
+            Firstname : "Leo",
+            Lastname  : "Singa",
             Email     : "leo@gmail.com",
             StatusID  : 1,
             RoleID    : 1,
@@ -36,8 +36,8 @@ var(
         {
             ID        : uuid.New(),
             Username  : "jennydoe",
-            FirstName : "Jenny",
-            LastName  : "Doe",
+            Firstname : "Jenny",
+            Lastname  : "Doe",
             Email     : "jenny@gmail.com",
             StatusID  : 1,
             RoleID    : 0,
@@ -146,8 +146,8 @@ func TestUserCreateHandler(t *testing.T) {
         // prepare mock with ur[0] values
         req := new(d.UserRequest)
         req.Username  = u[0].Username
-        req.FirstName = u[0].FirstName
-        req.LastName  = u[0].LastName
+        req.Firstname = u[0].Firstname
+        req.Lastname  = u[0].Lastname
         req.Email     = u[0].Email
         req.PassKey   = "secret"
         req.StatusID  = u[0].StatusID
@@ -206,8 +206,8 @@ func TestUserCreateHandler(t *testing.T) {
 
         // prepare mock with ur[0] values
         req := new(d.UserRequest)
-        req.FirstName = u[0].FirstName
-        req.LastName  = u[0].LastName
+        req.Firstname = u[0].Firstname
+        req.Lastname  = u[0].Lastname
         req.Email     = u[0].Email
         req.PassKey   = "secret"
 
@@ -359,8 +359,8 @@ func TestUserUpdateHandler(t *testing.T) {
         // prepare mock with ur[0] values
         req := new(d.UserRequest)
         req.Username  = u[0].Username
-        req.FirstName = u[0].FirstName
-        req.LastName  = u[0].LastName
+        req.Firstname = u[0].Firstname
+        req.Lastname  = u[0].Lastname
         req.Email     = u[0].Email
         req.PassKey   = "secret"
         req.StatusID  = u[0].StatusID
@@ -429,8 +429,8 @@ func TestUserUpdateHandler(t *testing.T) {
 
         // prepare mock with ur[0] values
         req := new(d.UserRequest)
-        req.FirstName = u[0].FirstName
-        req.LastName  = u[0].LastName
+        req.Firstname = u[0].Firstname
+        req.Lastname  = u[0].Lastname
         req.Email     = u[0].Email
         req.PassKey   = "secret"
 

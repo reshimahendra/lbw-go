@@ -1,3 +1,8 @@
+/*
+    package server
+    server.go
+    - refactored routine that will executed in main func
+*/
 package server
 
 import (
@@ -8,7 +13,8 @@ import (
 	"github.com/reshimahendra/lbw-go/internal/pkg/logger"
 )
 
-func Run() {
+// Run will execute the server application
+func Run(){
     // load configuration
     if err := config.Setup(); err != nil {
         logger.Errorf("fail loading configuration: %v", err)
@@ -19,7 +25,7 @@ func Run() {
     if err != nil {
         logger.Errorf("fail connecting to database: %v", err)
     }
-    // defer pool.Close()
+    defer pool.Close()
 
     // prepare server
     mode, err := config.Get().Server.GetMode()
@@ -42,6 +48,8 @@ func Run() {
     // prepare router for account app
     account.Router(pool, router)
 
+    // run gin server
     welcome("LotusBW", "http://127.0.0.1:8000", "-", 46) 
-    router.Run(":8000")
+    logger.Errorf("%v", router.Run(":8000"))
+
 }

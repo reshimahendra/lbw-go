@@ -12,6 +12,10 @@ import (
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/reshimahendra/lbw-go/internal/pkg/helper"
 )
+var (
+    // generateSecureKey is instance func of helper.GenerateSecureKey
+    generateSecureKeyFunc = helper.GenerateSecureKey
+)
 
 // AuthLoginDTO is 'DTO' (Data Transfer Object) to verify user on login
 type AuthLoginDTO struct {
@@ -38,9 +42,21 @@ type TokenDetailsDTO struct {
 }
 
 // CreateToken will 'create' a jwt token
-func CreateToken(email string) (token *TokenDetailsDTO, err error) {
+func CreateToken(email string) (*TokenDetailsDTO, error) {
+    // check email validity
+    if !helper.EmailIsValid(email) {
+        e := E.New(E.ErrEmailIsInvalid)
+        return nil, e
+    }
+
+    // load server configuration
     config := config.Get()
-    fmt.Printf("CONFIG: \n%v\n",config)
+
+    // prepare token detail instance
+    var (
+        err error
+        token = new(TokenDetailsDTO)
+    )
 
     token.AtExpiresTime = time.Now().Add(
         time.Duration(config.Server.AccessTokenExpireDuration) * time.Hour)
@@ -52,27 +68,24 @@ func CreateToken(email string) (token *TokenDetailsDTO, err error) {
     atClaims["email"]     = email
     atClaims["user_uuid"] = "user_uuid"
     atClaims["exp"]       = time.Now().Add(time.Hour * 48).Unix()
-    atClaims["uuid"]      = ""
-    
-    aToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 
+    aToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+    
     token.AccessToken, err = aToken.SignedString([]byte(config.Server.SecureKey))
     if err != nil {
         fmt.Printf("error occur while creating access token: %v\n", err)
         return nil, err
     }
 
-    fmt.Printf("access token: %v\n", aToken)
-
     // Construct refresh token 
     rtClaims := jwt.MapClaims{}
     rtClaims["email"]     = email
     rtClaims["user_uuid"] = "user_uuid"
     rtClaims["exp"]       = time.Now().Add(time.Hour * 96).Unix()
-    rtClaims["uuid"]      = ""
 
     rToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 
+    // rt := NewJwtToken(rToken)
     token.RefreshToken, err = rToken.SignedString([]byte(config.Server.SecureKey))
     if err != nil {
         fmt.Printf("error occur while creating refresh token: %v\n", err)
@@ -80,7 +93,7 @@ func CreateToken(email string) (token *TokenDetailsDTO, err error) {
     }
 
     // Generate secure key
-    generateKey, err := helper.GenerateSecureKey(config.Server.MinimumSecureKeyLength)
+    generateKey, err := generateSecureKeyFunc(config.Server.MinimumSecureKeyLength)
     if err != nil {
         fmt.Printf("error occur while generating secure key: %v\n", err)
         return nil, err

@@ -18,14 +18,18 @@ func TestServerConfig(t *testing.T) {
 
     // test SetMode method with typical/ expected behaviour
     assert.NoError(t, tmpServer.SetMode("production")) 
-
-    // test SetMode method with error return
-    assert.Error(t, tmpServer.SetMode("noavail")) 
-
-    // test GetMode method with typical/ normal operation
     mode, err := tmpServer.GetMode()
     assert.NoError(t, err)
     assert.Equal(t, "production", mode)
+
+    // test GetMode method with typical/ normal operation
+    assert.NoError(t, tmpServer.SetMode("development")) 
+    mode, err = tmpServer.GetMode()
+    assert.NoError(t, err)
+    assert.Equal(t, "development", mode)
+
+    // test SetMode method with error return
+    assert.Error(t, tmpServer.SetMode("noavail")) 
 
     // test GetMode method with error return
     tmpServer.ServerMode = "nothing"

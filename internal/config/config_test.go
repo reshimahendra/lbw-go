@@ -34,7 +34,8 @@ var (
         AccessTokenExpireDuration  : 1,
         RefreshTokenExpireDuration : 1,
         LimitCountPerRequest       : 1,
-        ServerMode                 : "development",
+        TrustedProxies             : []string{"127.0.0.1","localhost"},
+        ServerMode                 : "production",
         WelcomeMessage             : true,
 
     }

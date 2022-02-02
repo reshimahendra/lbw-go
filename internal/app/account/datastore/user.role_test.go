@@ -1,8 +1,8 @@
 /*
-   package user (datastore test)
+   package datastore (test)
    - 'user.role' test unit
 */
-package user
+package datastore 
 
 import (
 	"regexp"
@@ -11,19 +11,19 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/pashagolub/pgxmock"
-	"github.com/reshimahendra/lbw-go/internal/domain"
+	d "github.com/reshimahendra/lbw-go/internal/domain"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
     urHeader = []string{"id","role_name","description","created_at","updated_at"}
-    ur = []*domain.UserRole{
+    ur = []*d.UserRole{
         {ID : 0, RoleName: "Guest", Description: "Guest role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
         {ID : 1, RoleName: "Superuser", Description: "Superuser role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
         {ID : 2, RoleName: "Admin", Description: "Admin role", CreatedAt: time.Now(), UpdatedAt: time.Now()},
     }
-    errUser = domain.UserRole{ID : 3, RoleName: "FAIL", Description: "FAIL role", CreatedAt: time.Now()}
+    errUser = d.UserRole{ID : 3, RoleName: "FAIL", Description: "FAIL role", CreatedAt: time.Now()}
 )
 
 // Run will prepare our pgxmock connection interface
@@ -171,6 +171,35 @@ func TestUserRoleGets(t *testing.T) {
         assert.Nil(t, got)
     })
 
+    // EXPECT FAIL scan data error. Simulated by 
+    // mocking ScanAll func of the pgxscan
+    t.Run("EXPECT FAIL scan data error", func(t *testing.T){
+        // mock inner function pgxscan.ScanAll
+        scanAll := scanAllFunc
+        scanAllFunc = func(dst interface{}, rows pgx.Rows) error {
+            return E.New(E.ErrDatabase)
+        }
+        defer func() {
+            scanAllFunc = scanAll
+        }()
+
+        // prepare mock query
+        mock.ExpectQuery(regexp.QuoteMeta(sqlUserRoleR)).
+            WillReturnRows(pgxmock.NewRows(urHeader).
+                AddRow(ur[0].ID,ur[1].RoleName,ur[0].Description,ur[0].CreatedAt,ur[0].UpdatedAt).
+                AddRow(ur[1].ID,ur[1].RoleName,ur[1].Description,ur[1].CreatedAt,ur[1].UpdatedAt).
+                AddRow(ur[2].ID,ur[2].RoleName,ur[2].Description,ur[2].CreatedAt,ur[2].UpdatedAt),
+            )
+
+        // actual method test
+        store := NewUserRoleStore(mock)
+        got, err := store.Gets()
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+
 }
 
 // TestUserRoleUpdate will test behaviour of user.role Delete method
@@ -204,7 +233,7 @@ func TestUserRoleUpdate(t *testing.T) {
 
         // actual method call (method test)
         store := NewUserRoleStore(mock)
-        got, err := store.Update(1, domain.UserRole{Description:"test role fail"})
+        got, err := store.Update(1, d.UserRole{Description:"test role fail"})
 
         // test verification and validation
         assert.Error(t, err)
@@ -238,13 +267,10 @@ func TestUserRoleDelete(t *testing.T) {
     // which is returning no error / success operation
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         // prepare mock
-        del := time.Now()
-        headerDel := append(urHeader, "deleted_at")
-        
         mock.ExpectQuery(regexp.QuoteMeta(sqlUserRoleD)).
             WithArgs(ur[0].ID).
-            WillReturnRows(pgxmock.NewRows(headerDel).
-                AddRow(ur[0].ID,ur[0].RoleName,ur[0].Description,ur[0].CreatedAt,ur[0].UpdatedAt,del),
+            WillReturnRows(pgxmock.NewRows(urHeader).
+                AddRow(ur[0].ID,ur[0].RoleName,ur[0].Description,ur[0].CreatedAt,ur[0].UpdatedAt),
             )
 
         // actual method call (method test)
@@ -252,7 +278,6 @@ func TestUserRoleDelete(t *testing.T) {
         got, err := store.Delete(ur[0].ID)
 
         want := ur[0]
-        want.DeletedAt = del
 
         // test verification and validation
         assert.NoError(t, err)

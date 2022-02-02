@@ -6,8 +6,8 @@
 package config
 
 import (
-	"errors"
 	"strings"
+	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 )
 
 // Server is configuration setup for server
@@ -33,6 +33,9 @@ type Server struct {
     // LimitCountPerRequest is the limit count that allowed per request
     LimitCountPerRequest       float64
 
+    // TrustedProxies is all trusted proxies
+    TrustedProxies             []string
+
     // ServerMode is server mode option, value is "production" aor "development"
     ServerMode                 string
 
@@ -50,7 +53,7 @@ func (s *Server) SetMode(mode string) (error) {
             s.ServerMode = mode
         }
     default: 
-        return errors.New("server mode value must be 'production' or 'development'")
+        return E.New(E.ErrServerMode)
     }
 
     return nil
@@ -63,13 +66,13 @@ func (s *Server) GetMode() (string, error) {
         return s.ServerMode, nil    
     }
 
-    return "", errors.New("server mode value must be 'production' or 'development'")
+    return "", E.New(E.ErrServerMode)
 }
 
-// GetSecretKey is to get secret key setting
-func (s *Server) GetSecretKey() (string, error) {
+// GetSecureKey is to get secure key setting
+func (s *Server) GetSecureKey() (string, error) {
     if len(s.SecureKey) < s.MinimumSecureKeyLength {
-        return "", errors.New("secret key length is less than minimum requirement length")
+        return "", E.New(E.ErrSecureKeyTooShort)
     }
 
     return s.SecureKey, nil 

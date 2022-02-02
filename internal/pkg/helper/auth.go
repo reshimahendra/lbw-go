@@ -12,6 +12,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var crandRead = crand.Read
+
 // checkSecureKeyLength will checking length of the 'Secure Key'
 func checkSecureKeyLength(length int) error {
     sLength := viper.GetInt("server.minimumSecureKeyLength")
@@ -55,7 +57,7 @@ func GenerateSecureKey(length int) (string, error) {
         return "", err
     }
 
-    _, err := crand.Read(gsk)
+    _, err := crandRead(gsk)
     if err != nil {
         return fallbackInsecureKey(length)
     }
@@ -65,10 +67,10 @@ func GenerateSecureKey(length int) (string, error) {
 }
 
 // HashPassword will generated hashed password so it wont easily be roken by unauthorized person
-func HashPassword(password string) (hashed string, err error) {
+func HashPassword(password string) (string, error) {
     bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-    hashed = string(bytes)
-    return
+    hashed := string(bytes)
+    return hashed, err
 }
 
 // CheckPasswordHash will compare 'hashed' password with the 'input' password
@@ -79,17 +81,15 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 // EmailIsValid will check whether given email was valid
-func EmailIsValid(email string) (isValid bool) {
+func EmailIsValid(email string) bool {
     _, err := mail.ParseAddress(email)
 
-    isValid = err == nil
-
-    return
+    return err == nil
 }
 
 // PasswordTooShort will check whether password length is not match the minimum 
 // password lenght for the user account
-func PasswordTooShort(password string) (isPasswordtooShort bool) {
+func PasswordTooShort(password string) bool {
     minLength := viper.GetInt("account.minimumPasswordLength")
     if minLength == 0 {
         minLength = 8

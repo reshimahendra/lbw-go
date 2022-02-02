@@ -3,15 +3,14 @@ package helper
 import (
 	"testing"
 
+	"github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
-// func init() {
-//     err := config.Setup()
-//     if err != nil {
-//         log.Println("Error on initializing configuration")
-//     }
-// }
+var (
+    crandReadFunc = crandRead
+)
+
 
 // TestCheckSecureKeyLength to check whether secure key meet minimum length requirement
 func TestCheckSecureKeyLength(t *testing.T) {
@@ -72,18 +71,35 @@ func TestGenerateSecureKey(t *testing.T) {
         name string
         length int
         wantError bool
+        fallback bool
     }{
-        {"EXPECT SUCCESS", 16, false},
-        {"EXPECT FAIL key length less than required lenth", 15, true},
+        {"EXPECT SUCCESS", 16, false, false},
+        {"EXPECT FAIL key length error", 15, true, false},
+        {"EXPECT FAIL key return fallback", 16, true, true},
     }
 
     for _, tt := range cases {
         t.Run(tt.name, func(t *testing.T){
+            if tt.fallback {
+                // mock inner function (crand)
+                crandRead = func(b []byte) (n int, err error) {
+                    return 0, errors.New(errors.ErrDataIsInvalid)
+                }
+                defer func() {
+                    crandRead = crandReadFunc
+                }()
+            }
+
             got, err := GenerateSecureKey(tt.length)
             switch tt.wantError {
             case true:
-                assert.Error(t, err)
-                assert.Equal(t, got, "")
+                if tt.fallback {
+                    assert.NoError(t, err)
+                    assert.NotNil(t, got)
+                } else {
+                    assert.Error(t, err)
+                    assert.Equal(t, got, "")
+                }
             case false:
                 assert.NoError(t, err)
                 assert.NotNil(t, got)

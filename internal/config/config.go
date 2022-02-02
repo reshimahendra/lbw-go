@@ -19,6 +19,10 @@ var (
     // get the root directory of our project
     _, base, _, _ = runtime.Caller(0)
     basePath = filepath.Join(filepath.Dir(base), "../..")
+    
+    // wrap viper function so it can be mocked on test
+    viperReadInConfig = viper.ReadInConfig
+    viperUnmarshal = viper.Unmarshal
 )
 
 // Configuration is main configuration wrapper
@@ -53,13 +57,13 @@ func Setup() (err error) {
     viper.AddConfigPath("./config")
 
     // try ro read config file
-    if err = viper.ReadInConfig(); err != nil {
+    if err = viperReadInConfig(); err != nil {
         logger.Errorf("error reading config file: %v\n", err)
         return err
     }
 
     // unmarshal from the yaml file to Configuration struct
-    if err = viper.Unmarshal(&c); err != nil {
+    if err = viperUnmarshal(&c); err != nil {
         logger.Errorf("error unable to decode config into struct: %v\n", err)
         return err
     }

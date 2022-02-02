@@ -7,10 +7,10 @@
 ```
 
 ## Table of Content
-1. [Quick Review](#1.-quick-review)
-2. [Directory Structure](#2.directory-structure)
-3. [Getting started](#3.-getting-started)
-4. [TODO](#4.-todo)
+1. [Quick Review](#1-quick-review)
+2. [Directory Structure](#2-directory-structure)
+3. [Getting started](#3-getting-started)
+4. [TODO](#4-todo)
 
 ### 1. Quick Review
 The package used in this project:
@@ -23,30 +23,93 @@ The package used in this project:
 
 ### 2. Directory Structure
 ```bash
-|-- root
-|-- |-- cmd
-|-- |-- config
-|-- |-- dist
-|-- |-- internal
-|-- |-- |-- config
-|-- |-- |-- domain
-|-- |-- |-- |-- sql
-|-- |-- |-- controller
-|-- |-- |-- |-- user
-|-- |-- |-- datastore
-|-- |-- |-- |-- user
-|-- |-- |-- interfaces
-|-- |-- |-- pkg
-|-- |-- log
-|-- |-- pkg
-|-- |-- vendor
+|-- root/
+|-- |-- cmd/
+|-- |-- |-- app/
+|-- |-- |-- |-- server/
+|-- |-- |-- main.go
+|-- |-- config/
+|-- |-- |-- .config.yaml
+|-- |-- dist/
+|-- |-- internal/
+|-- |-- |-- app/
+|-- |-- |-- |-- account/
+|-- |-- |-- |-- |-- datastore/
+|-- |-- |-- |-- |-- handler/
+|-- |-- |-- |-- |-- service/
+|-- |-- |-- |-- |-- README.md
+|-- |-- |-- |-- |-- router.go
+|-- |-- |-- |-- mail/
+|-- |-- |-- config/
+|-- |-- |-- database/
+|-- |-- |-- |-- sql/
+|-- |-- |-- domain/
+|-- |-- |-- pkg/
+|-- |-- |-- |-- auth/
+|-- |-- |-- |-- errors/
+|-- |-- |-- |-- helper/
+|-- |-- |-- |-- logger/
+|-- |-- log/
+|-- |-- vendor/
+|-- |-- go.mod
+|-- |-- go.sum
+|-- |-- LICENSE
+|-- |-- Makefile
+|-- |-- README.md
 ```
 ### 3. Getting Started
 
+#### copy config file
+
+Before we run the app, make sure the config has been set.
+from the `root` directory, run
+```bash
+cp config/example.config.yaml .config.yaml
+```
+
+#### run app
+
+to test application (with hot reload), run:
+```bash
+air
+```
+
+OR
+
+run without hot reload:
+```bash
+make run
+```
+
+#### build app
+
+To build the app, run:
+```bash
+make build
+```
+
+#### run test
+
+To run the test, run:
+```bash
+make test
+```
+
+Show test coverage result on browser:
+```bash
+# make sure file 'proof.out already exist/ generated'
+make show-test
+```
+
+Generate new test coverage and show result on browser:
+```bash
+make test-proof
+```
+
 ### 4. TODO
 
-- [ ] Jwt Authentication and Authorization
-- [ ] Add Test
+- [x] Jwt Authentication and Authorization
+- [x] Add Test
 - [ ] Add blog app
 
 

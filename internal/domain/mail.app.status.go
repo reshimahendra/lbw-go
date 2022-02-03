@@ -11,7 +11,7 @@ type MemberStatus struct {
     ID          int         `json:"id"`
 
     // StatusName is MemberStatus status name
-    StatusName    string      `json:"status_name"`
+    StatusName  string      `json:"status_name"`
 
     // Description is the short description of the member status
     Description string      `json:"description,omitempty"`

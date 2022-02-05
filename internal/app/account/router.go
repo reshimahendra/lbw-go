@@ -6,6 +6,7 @@ import (
 	h "github.com/reshimahendra/lbw-go/internal/app/account/handler"
 	s "github.com/reshimahendra/lbw-go/internal/app/account/service"
 	db "github.com/reshimahendra/lbw-go/internal/database"
+	"github.com/reshimahendra/lbw-go/internal/middleware"
 )
 
 
@@ -27,13 +28,21 @@ func Router(dbPool db.IDatabase, router *gin.Engine) {
 
     // app router group
     user := router.Group("/account")
+    user.Use(middleware.CORS())
+    user.Use(middleware.Security())
+
+    // need authorization
+    userAuth := router.Group("/account")
+    userAuth.Use(middleware.CORS())
+    userAuth.Use(middleware.Security())
+    userAuth.Use(middleware.Authorize())
 
     // Router for User
-    user.POST("/", userHandler.UserCreateHandler)
-    user.PUT("/:id", userHandler.UserUpdateHandler)
-    user.DELETE("/:id", userHandler.UserDeleteHandler)
+    userAuth.POST("/", userHandler.UserCreateHandler)
+    userAuth.PUT("/:id", userHandler.UserUpdateHandler)
+    userAuth.DELETE("/:id", userHandler.UserDeleteHandler)
     user.GET("/:id", userHandler.UserGetHandler)
-    user.GET("/", userHandler.UserGetsHandler)
+    userAuth.GET("/", userHandler.UserGetsHandler)
 
     // router for user.status
     userStatus := user.Group("/status")

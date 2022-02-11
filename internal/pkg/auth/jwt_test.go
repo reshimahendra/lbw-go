@@ -75,11 +75,12 @@ func TestCreateToken(t *testing.T) {
 }
 
 func TestVerifyToken(t *testing.T) {
+    aNewTok, _ := CreateToken("aabi@basd.com")
     cases := []struct{
         name,token string
         wantErr bool
     }{
-        {"EXPECT SUCCESS", aTok, false},
+        {"EXPECT SUCCESS", aNewTok.AccessToken, false},
         {"EXPECT FAIL", "fail token", true},
         {"EXPECT FAIL II", "", true},
     }
@@ -106,11 +107,12 @@ func TestVerifyToken(t *testing.T) {
 }
 
 func TestTokenValid(t *testing.T) {
+    aNewTok, _ := CreateToken("aabi@basd.com")
     cases := []struct{
         name,token string
         wantErr bool
     }{
-        {"EXPECT SUCCESS", aTok, false},
+        {"EXPECT SUCCESS", aNewTok.AccessToken, false},
         {"EXPECT FAIL invalid token", aTok+"a", true},
         {"EXPECT FAIL", "'", true},
     }

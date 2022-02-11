@@ -9,40 +9,18 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/reshimahendra/lbw-go/internal/config"
+	d "github.com/reshimahendra/lbw-go/internal/domain"
 	E "github.com/reshimahendra/lbw-go/internal/pkg/errors"
 	"github.com/reshimahendra/lbw-go/internal/pkg/helper"
+	"github.com/reshimahendra/lbw-go/internal/pkg/logger"
 )
 var (
     // generateSecureKey is instance func of helper.GenerateSecureKey
     generateSecureKeyFunc = helper.GenerateSecureKey
 )
 
-// AuthLoginDTO is 'DTO' (Data Transfer Object) to verify user on login
-type AuthLoginDTO struct {
-    Email    string `json:"email"`
-    Password string `json:"password"`
-}
-
-// AuthLoginResponse is 'DTO' (Data Transfer Object) to 'Response'
-// or sending data to user upon 'login' or request 'refresh token'
-type AuthLoginResponse struct {
-    AccessToken     string  `json:"access_token"`
-    RefreshToken    string  `json:"refresh_token"`
-    TransmissionKey string  `json:"transmission_key"`
-}
-
-// TokenDetailsDTO is 'DTO' (data Transfer Object) containing
-// details of token expiration time
-type TokenDetailsDTO struct {
-    AccessToken     string  `json:"access_token"`
-    RefreshToken    string  `json:"refresh_token"`
-    AtExpiresTime   time.Time
-    RtExpiresTime   time.Time
-    TransmissionKey string  `json:"transmission_key"`
-}
-
 // CreateToken will 'create' a jwt token
-func CreateToken(email string) (*TokenDetailsDTO, error) {
+func CreateToken(email string) (*d.TokenDetailsDTO, error) {
     // check email validity
     if !helper.EmailIsValid(email) {
         e := E.New(E.ErrEmailIsInvalid)
@@ -55,7 +33,7 @@ func CreateToken(email string) (*TokenDetailsDTO, error) {
     // prepare token detail instance
     var (
         err error
-        token = new(TokenDetailsDTO)
+        token = new(d.TokenDetailsDTO)
     )
 
     token.AtExpiresTime = time.Now().Add(
@@ -73,7 +51,7 @@ func CreateToken(email string) (*TokenDetailsDTO, error) {
     
     token.AccessToken, err = aToken.SignedString([]byte(config.Server.SecureKey))
     if err != nil {
-        fmt.Printf("error occur while creating access token: %v\n", err)
+        logger.Errorf("error occur while creating access token: %v\n", err)
         return nil, err
     }
 
@@ -88,14 +66,14 @@ func CreateToken(email string) (*TokenDetailsDTO, error) {
     // rt := NewJwtToken(rToken)
     token.RefreshToken, err = rToken.SignedString([]byte(config.Server.SecureKey))
     if err != nil {
-        fmt.Printf("error occur while creating refresh token: %v\n", err)
+        logger.Errorf("error occur while creating refresh token: %v\n", err)
         return nil, err
     }
 
     // Generate secure key
     generateKey, err := generateSecureKeyFunc(config.Server.MinimumSecureKeyLength)
     if err != nil {
-        fmt.Printf("error occur while generating secure key: %v\n", err)
+        logger.Errorf("error occur while generating secure key: %v\n", err)
         return nil, err
     }
     token.TransmissionKey = generateKey

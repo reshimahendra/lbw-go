@@ -358,20 +358,22 @@ func TestUserStoreDelete(t *testing.T) {
     })
 }
 
+// TestGetUserCredential will test behaviour of GetCredential method
 func TestGetUserCredential(t *testing.T) {
     // prepare mock
     mock := PrepareMock(t)
+    store := NewUserStore(mock)
 
     // EXPECT SUCCESS is typical test simulation with expectation that
     // no error occur
     t.Run("EXPECT SUCCESS", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
-            WithArgs(u[0].ID).
+            WithArgs(u[0].Username,u[0].PassKey).
             WillReturnRows(pgxmock.NewRows([]string{"id","username","passkey","status_id"}).
                 AddRow(u[0].ID,u[0].Username,u[0].PassKey,u[0].StatusID))
 
         // call actual method to test
-        cred, err := GetCredential(mock, u[0].ID)
+        cred, err := store.GetCredential(u[0].Username,u[0].PassKey)
 
         // test validation and verification
         assert.NoError(t, err)
@@ -381,11 +383,11 @@ func TestGetUserCredential(t *testing.T) {
     // EXPECT FAIL data empty error. Simulated by returning pgx.ErrNoRows error
     t.Run("EXPECT FAIL data empty error", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
-            WithArgs(u[0].ID).
+            WithArgs(u[0].Username,u[0].PassKey).
             WillReturnError(pgx.ErrNoRows)
 
         // call actual method to test
-        cred, err := GetCredential(mock, u[0].ID)
+        cred, err := store.GetCredential(u[0].Username,u[0].PassKey)
 
         // test validation and verification
         assert.Error(t, err)
@@ -395,14 +397,131 @@ func TestGetUserCredential(t *testing.T) {
     // EXPECT FAIL database error. Simulated by returning E.ErrDatabase error
     t.Run("EXPECT FAIL database error", func(t *testing.T){
         mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
-            WithArgs(u[0].ID).
+            WithArgs(u[0].Username,u[0].PassKey).
             WillReturnError(E.New(E.ErrDatabase))
 
         // call actual method to test
-        cred, err := GetCredential(mock, u[0].ID)
+        cred, err := store.GetCredential(u[0].Username,u[0].PassKey)
 
         // test validation and verification
         assert.Error(t, err)
         assert.Nil(t, cred)
+    }) 
+}
+
+// TestGetByEmail will test behaviour of GetByEmail method
+func TestGetByEmail(t *testing.T) {
+    // prepare mock
+    mock := PrepareMock(t)
+    store := NewUserStore(mock)
+
+    // EXPECT SUCCESS is typical test simulation with expectation that
+    // no error occur
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlGetUserByEmail)).
+            WithArgs(u[0].Email).
+            WillReturnRows(pgxmock.NewRows([]string{"id","username","passkey","status_id"}).
+                AddRow(u[0].ID,u[0].Username,u[0].PassKey,u[0].StatusID))
+
+        // call actual method to test
+        cred, err := store.GetByEmail(u[0].Email)
+
+        // test validation and verification
+        assert.NoError(t, err)
+        assert.NotNil(t, cred)
+    }) 
+
+    // EXPECT FAIL data empty error. Simulated by returning pgx.ErrNoRows error
+    t.Run("EXPECT FAIL data empty error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlGetUserByEmail)).
+            WithArgs(u[0].Email).
+            WillReturnError(pgx.ErrNoRows)
+
+        // call actual method to test
+        cred, err := store.GetByEmail(u[0].Email)
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, cred)
+    }) 
+
+    // EXPECT FAIL database error. Simulated by returning E.ErrDatabase error
+    t.Run("EXPECT FAIL database error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlGetUserByEmail)).
+            WithArgs(u[0].Email).
+            WillReturnError(E.New(E.ErrDatabase))
+
+        // call actual method to test
+        cred, err := store.GetByEmail(u[0].Email)
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Nil(t, cred)
+    }) 
+}
+
+// TestIsUserExist will test behaviour of IsUserExist method
+func TestIsUserExist(t *testing.T) {
+    // prepare mock
+    mock := PrepareMock(t)
+    store := NewUserStore(mock)
+
+    // EXPECT SUCCESS user exist is typical test simulation with expectation that
+    // no error occur
+    t.Run("EXPECT SUCCESS user exist", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlIsUserExist)).
+            WithArgs(u[0].Username, u[0].Email).
+            WillReturnRows(pgxmock.NewRows([]string{"count"}).
+                AddRow(1))
+
+        // call actual method to test
+        exist, err := store.IsUserExist(u[0].Username,u[0].Email)
+
+        // test validation and verification
+        assert.NoError(t, err)
+        assert.Equal(t, true, exist)
+    }) 
+
+    // EXPECT SUCCESS user not exist is typical test simulation with expectation that
+    // no error occur
+    t.Run("EXPECT FAIL data not found", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlIsUserExist)).
+            WithArgs(u[0].Username, u[0].Email).
+            WillReturnError(pgx.ErrNoRows)
+
+        // call actual method to test
+        exist, err := store.IsUserExist(u[0].Username,u[0].Email)
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Equal(t, false, exist)
+    }) 
+
+    // EXPECT FAIL data empty error. Simulated by returning pgx.ErrNoRows error
+    t.Run("EXPECT FAIL database error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
+            WithArgs(u[0].Username, u[0].Email).
+            WillReturnError(E.New(E.ErrDatabase))
+
+        // call actual method to test
+        exist, err := store.IsUserExist(u[0].Username,u[0].Email)
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Equal(t, false, exist)
+    }) 
+
+    // EXPECT FAIL database error. Simulated by returning E.ErrDatabase error
+    t.Run("EXPECT FAIL database error", func(t *testing.T){
+        mock.ExpectQuery(regexp.QuoteMeta(sqlCredentialR)).
+            WithArgs(u[0].ID).
+            WillReturnError(E.New(E.ErrDatabase))
+
+        // call actual method to test
+        exist, err := store.IsUserExist(u[0].Username,u[0].Email)
+
+        // test validation and verification
+        assert.Error(t, err)
+        assert.Equal(t, false, exist)
     }) 
 }

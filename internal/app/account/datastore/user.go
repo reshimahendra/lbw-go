@@ -27,21 +27,14 @@ import (
 
 const (
     // prepare sql command to insert new user record
-    sqlUserC = `INSERT INTO public.users (id,username,firstname,lastname,email,passkey,updated_at,
-            user_status_id,user_role_id) VALUES ($1,$2,$3,$4,$5,$6,CURRENT_TIMESTAMP,$7,$8) 
-            RETURNING id,username,firstname,lastname,email,status_id,role_id,
-            created_at,updated_at`
-    sqlUserR1 = `SELECT id,username,firstname,lastname,email,status_id,role_id,
-            created_at,updated_at FROM public.users WHERE id = $1 AND deleted_at IS NULL`
-    sqlUserR = `SELECT id,username,firstname,lastname,email,status_id,role_id,
-            created_at,updated_at FROM public.users WHERE deleted_at IS NULL ORDER BY created_at`
-    sqlUserU = `UPDATE public.users SET username=$2,firstname=$3,lastname=$4,email=$5,passkey=$6,
-            status_id=$7,role_id=$8,updated_at=CURRENT_TIMESTAMP WHERE id=$1 RETURNING 
-            id,username,firstname,lastname,email,status_id,role_id,created_at,updated_at`
-    sqlUserD = `UPDATE public.users SET updated_at=CURRENT_TIMESTAMP,deleted_at=CURRENT_TIMESTAMP 
-            WHERE id=$1 RETURNING id, username,firstname,lastname,email,status_id,
-            role_id,created_at,updated_at`
-    sqlCredentialR = `SELECT id,username,passkey,user_status_id FROM public.users WHERE id=$1`
+    sqlUserC = `INSERT INTO public.users (id,username,firstname,lastname,email,passkey,updated_at,user_status_id,user_role_id) VALUES ($1,$2,$3,$4,$5,$6,CURRENT_TIMESTAMP,$7,$8) RETURNING id,username,firstname,lastname,email,status_id,role_id,created_at,updated_at`
+    sqlUserR1 = `SELECT id,username,firstname,lastname,email,status_id,role_id,created_at,updated_at FROM public.users WHERE id = $1 AND deleted_at IS NULL`
+    sqlUserR = `SELECT id,username,firstname,lastname,email,status_id,role_id,created_at,updated_at FROM public.users WHERE deleted_at IS NULL ORDER BY created_at`
+    sqlUserU = `UPDATE public.users SET username=$2,firstname=$3,lastname=$4,email=$5,passkey=$6,status_id=$7,role_id=$8,updated_at=CURRENT_TIMESTAMP WHERE id=$1 RETURNING id,username,firstname,lastname,email,status_id,role_id,created_at,updated_at`
+    sqlUserD = `UPDATE public.users SET updated_at=CURRENT_TIMESTAMP,deleted_at=CURRENT_TIMESTAMP WHERE id=$1 RETURNING id, username,firstname,lastname,email,status_id,role_id,created_at,updated_at`
+    sqlGetUserByEmail = `SELECT id,username,passkey,status_id FROM public.users WHERE email=$1`
+    sqlCredentialR = `SELECT id,username,passkey,status_id FROM public.users WHERE username=$1 AND passkey=$2`
+    sqlIsUserExist = `SELECT COUNT(id) FROM public.users WHERE username=$1 OR email=$2`
 )
 
 var (
@@ -51,23 +44,32 @@ var (
 // IUserStore is user interface for CRUD operation directly
 // to the database
 type IUserStore interface {
-    // Create will execute sql query to insert new user.role record into the database
+    // Create will execute sql query to insert new user record into the database
     Create(input d.User) (*d.User, error)
 
-    // Get will execute sql query to get user.role record from database
+    // Get will execute sql query to get user record from database
     // based on the given id
     Get(id uuid.UUID) (*d.User, error)
 
-    // Gets will execute sql query to get all user.role record from database
+    // GetByEmail will get credential data by email from user record
+    GetByEmail(email string) (*d.UserCredential, error)
+
+    // Gets will execute sql query to get all user record from database
     Gets() ([]*d.User, error)
 
-    // Update will execute sql query to update user.role record
+    // Update will execute sql query to update user record
     // based on given input id and input data 
     Update(id uuid.UUID, input d.User) (*d.User, error)
 
-    // Delete will do 'soft delete' instead of deleting the user.role record
+    // Delete will do 'soft delete' instead of deleting the user record
     // from the database. Data should be persistant in the database
     Delete(id uuid.UUID) (*d.User, error)
+    
+    // GetCredential will get credential data from user record
+    GetCredential(username,passkey string) (*d.UserCredential, error)
+
+    // IsUserExist will check whether username/ email is already exist
+    IsUserExist(username,email string) (bool, error)
 }
 
 // UserStore is instance wrapper for IDatabase interface
@@ -245,13 +247,9 @@ func (st *UserStore) Delete(id uuid.UUID) (*d.User, error) {
 }
 
 // GetCredential will get user credential data
-func GetCredential(DB database.IDatabase, id uuid.UUID) (*d.UserCredential, error) {
+func (st *UserStore) GetCredential(username,passkey string) (*d.UserCredential, error) {
     cred := new(d.UserCredential)
-    // if err := pgxscan.Get(context.Background(), DB, &cred, sqlCredentialR, id); err != nil{
-    //     logger.Errorf("fail get credential data: %v", err)
-    //     return nil
-    // }
-    err := DB.QueryRow(context.Background(), sqlCredentialR, id).Scan(
+    err := st.DB.QueryRow(context.Background(), sqlCredentialR, username,passkey).Scan(
         &cred.ID,
         &cred.Username,
         &cred.PassKey,
@@ -268,4 +266,45 @@ func GetCredential(DB database.IDatabase, id uuid.UUID) (*d.UserCredential, erro
     }
 
     return cred, nil
+}
+
+// GetByEmail will get user credential by username
+func (st *UserStore) GetByEmail(email string) (*d.UserCredential, error) {
+    cred := new(d.UserCredential)
+    err := st.DB.QueryRow(context.Background(), sqlGetUserByEmail, email).Scan(
+        &cred.ID,
+        &cred.Username,
+        &cred.PassKey,
+        &cred.StatusID,
+    )
+
+    // check if error occur during scan
+    if err == pgx.ErrNoRows{
+        logger.Errorf("fail get credential data: %v", err)
+        return nil, E.New(E.ErrDataIsEmpty)
+    } else if err != nil {
+        logger.Errorf("fail get credential data: %v", err)
+        return nil, E.New(E.ErrDatabase)
+    }
+
+    return cred, nil
+}
+
+// UserExist will check whether username/ email already exist
+func (st *UserStore) IsUserExist(username,email string) (bool, error) {
+    var userCount int
+    err := st.DB.QueryRow(context.Background(), sqlIsUserExist, username, email).Scan(
+        &userCount,
+    )
+
+    // check if error occur during scan
+    if err == pgx.ErrNoRows{
+        logger.Errorf("fail get user data: %v", err)
+        return false, err
+    } else if err != nil {
+        logger.Errorf("fail get user data: %v", err)
+        return false, err
+    }
+
+    return userCount >= 1, nil
 }

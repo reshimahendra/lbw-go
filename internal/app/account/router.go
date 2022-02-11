@@ -31,6 +31,9 @@ func Router(dbPool db.IDatabase, router *gin.Engine) {
     user.Use(middleware.CORS())
     user.Use(middleware.Security())
 
+    user.POST("/signup", userHandler.SignupHandler)
+    user.POST("/signin", userHandler.SigninHandler)
+
     // need authorization
     userAuth := router.Group("/account")
     userAuth.Use(middleware.CORS())
@@ -39,10 +42,12 @@ func Router(dbPool db.IDatabase, router *gin.Engine) {
 
     // Router for User
     userAuth.POST("/", userHandler.UserCreateHandler)
-    userAuth.PUT("/:id", userHandler.UserUpdateHandler)
+    user.PUT("/:id", userHandler.UserUpdateHandler)
     userAuth.DELETE("/:id", userHandler.UserDeleteHandler)
-    user.GET("/:id", userHandler.UserGetHandler)
+    userAuth.GET("/:id", userHandler.UserGetHandler)
     userAuth.GET("/", userHandler.UserGetsHandler)
+    userAuth.POST("/refresh-token", userHandler.RefreshTokenHandler)
+    userAuth.POST("/check-token", userHandler.CheckTokenHandler)
 
     // router for user.status
     userStatus := user.Group("/status")
@@ -50,10 +55,11 @@ func Router(dbPool db.IDatabase, router *gin.Engine) {
     userStatus.GET("/:id", userStatusHandler.UserStatusGetHandler)
     
     // router for user.role
-    userRole := user.Group("/role")
-    userRole.POST("/", userRoleHandler.UserRoleCreateHandler)
-    userRole.PUT("/:id", userRoleHandler.UserRoleUpdateHandler)
-    userRole.DELETE("/:id", userRoleHandler.UserRoleDeletesHandler)
-    userRole.GET("/:id", userRoleHandler.UserRoleGetHandler)
-    userRole.GET("/", userRoleHandler.UserRoleGetsHandler)
+    // userRole := user.Group("/role")
+    userRoleAuth := userAuth.Group("/role")
+    userRoleAuth.POST("/", userRoleHandler.UserRoleCreateHandler)
+    userRoleAuth.PUT("/:id", userRoleHandler.UserRoleUpdateHandler)
+    userRoleAuth.DELETE("/:id", userRoleHandler.UserRoleDeletesHandler)
+    userRoleAuth.GET("/:id", userRoleHandler.UserRoleGetHandler)
+    userRoleAuth.GET("/", userRoleHandler.UserRoleGetsHandler)
 }

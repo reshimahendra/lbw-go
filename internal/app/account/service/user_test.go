@@ -111,6 +111,43 @@ func (m *mockUserService) Delete(id uuid.UUID) (*d.User, error) {
     return u[0], nil
 }
 
+// GetByEmail is mocked GetCredential method to satisfy IUserStore interface
+func (m *mockUserService) GetByEmail(email string) (*d.UserCredential, error) {
+    if wantErr {
+        return nil, E.New(E.ErrDataIsEmpty)
+    }
+
+    return &d.UserCredential{
+        ID : u[0].ID,
+        Username : u[0].Username,
+        PassKey : u[0].PassKey,
+        StatusID : u[0].StatusID,
+    }, nil
+}
+
+// GetCredential is mocked GetCredential method to satisfy IUserStore interface
+func (m *mockUserService) GetCredential(username,passkey string) (*d.UserCredential, error) {
+    if wantErr {
+        return nil, E.New(E.ErrDataIsEmpty)
+    }
+
+    return &d.UserCredential{
+        ID : u[0].ID,
+        Username : u[0].Username,
+        PassKey : u[0].PassKey,
+        StatusID : u[0].StatusID,
+    }, nil
+}
+
+// IsUserExist is mocked IsUserExist method to satisfy IUserStore interface
+func (m *mockUserService) IsUserExist(username,email string) (bool, error) {
+    if wantErr {
+        return false, E.New(E.ErrDatabase)
+    }
+
+    return true, nil
+}
+
 // TestParseUUID will test the helper function parseUUID
 func TestParseUUID(t *testing.T) {
     // EXPECT SUCCESS will simulated normal operation with no error return
@@ -465,6 +502,104 @@ func TestUserServiceDelete(t *testing.T) {
 
         assert.Error(t, err)
         assert.Nil(t, got)
+    })
+}
+
+// TestUserServiceGetByEmail will test GetByEmail method behaviour of user service
+func TestUserServiceGetByEmail(t *testing.T) {
+    // prepare mock and service
+    mock := NewMockUserService(t)
+    service := NewUserService(mock)
+
+    // EXPECT SUCCESS will simulated normal operation with no error return
+    // this simulation expect all process goes as expected
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        // actual method call
+        got, err := service.GetByEmail(u[0].Email)
+
+        // test verification and validation
+        assert.NoError(t, err)
+        assert.NotNil(t, got)
+        assert.Equal(t, u[0].ConvertToCredential(), got)
+    })
+
+    // EXPECT FAIL get record error. Simulated by forcing to return error
+    // by setting wantErr=true
+    t.Run("EXPECT FAIL get record error", func(t *testing.T){
+        // actual method call (method to test)
+        wantErr = true
+        got, err := service.GetByEmail(u[0].Email)
+        wantErr = false
+
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+}
+
+// TestUserServiceGetCredential will test GetCredential method behaviour of user service
+func TestUserServiceGetCredential(t *testing.T) {
+    // prepare mock and service
+    mock := NewMockUserService(t)
+    service := NewUserService(mock)
+
+    // EXPECT SUCCESS will simulated normal operation with no error return
+    // this simulation expect all process goes as expected
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        // actual method call
+        got, err := service.GetCredential(u[0].Username, u[0].PassKey)
+
+        // test verification and validation
+        assert.NoError(t, err)
+        assert.NotNil(t, got)
+        assert.Equal(t, u[0].ConvertToCredential(), got)
+    })
+
+    // EXPECT FAIL get record error. Simulated by forcing to return error
+    // by setting wantErr=true
+    t.Run("EXPECT FAIL get record error", func(t *testing.T){
+        // actual method call (method to test)
+        wantErr = true
+        got, err := service.GetCredential(u[0].Username, u[0].PassKey)
+        wantErr = false
+
+        assert.Error(t, err)
+        assert.Nil(t, got)
+    })
+}
+
+// TestIsUserExist will test IsUserExist method behaviour of user service
+func TestIsUserExist(t *testing.T) {
+    // prepare mock and service
+    mock := NewMockUserService(t)
+    service := NewUserService(mock)
+
+    // EXPECT SUCCESS will simulated normal operation with no error return
+    // this simulation expect all process goes as expected
+    t.Run("EXPECT SUCCESS", func(t *testing.T){
+        // actual method call
+        got := service.IsUserExist(u[0].Username,u[0].Email)
+
+        // test verification and validation
+        assert.Equal(t, true, got)
+    })
+
+    // EXPECT SUCCESS record not found. Simulated by forcing to return error
+    // by setting wantErr=true so the result will be false
+    t.Run("EXPECT SUCCESS data not found", func(t *testing.T){
+        // actual method call (method to test)
+        wantErr = true
+        got := service.IsUserExist(u[0].Username,u[0].Email)
+        wantErr = false
+
+        assert.Equal(t, false, got)
+    })
+
+    // EXPECT FAIL email invalid. Simulated by inserting invalid mail 
+    t.Run("EXPECT SUCCESS data not found", func(t *testing.T){
+        // actual method call (method to test)
+        got := service.IsUserExist(u[0].Username, "aaa.com")
+
+        assert.Equal(t, false, got)
     })
 }
 

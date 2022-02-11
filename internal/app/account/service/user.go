@@ -36,6 +36,9 @@ type IUserService interface {
     // given id and expect to get UserResponse dto from the operation
     Get(id string) (*d.UserResponse, error)
 
+    // GetByEmail will make request to datastore to get user credential data by its username
+    GetByEmail(email string) (*d.UserCredential, error) 
+
     // Gets will make request to datastore to retreive all user data in dto format
     Gets() ([]*d.UserResponse, error)
 
@@ -45,6 +48,13 @@ type IUserService interface {
 
     // Delete will make request to datastore to do (soft) delete to give user id record
     Delete(id string) (*d.UserResponse, error)
+
+    // GetCredential will make request to datastore to get user credential data
+    GetCredential(username,passkey string) (*d.UserCredential, error) 
+
+    // IsUserExist will make request to datastore to check whether username/ email
+    // is already exist
+    IsUserExist(username,email string) bool
 }
 
 // UserService is instance wrapper for IUserStore interface
@@ -178,7 +188,7 @@ func (s *UserService) Update(id string, input d.UserRequest) (*d.UserResponse, e
 
 // Delete will  send request to user datastore to 'soft' delete user record by given user id
 func (s *UserService) Delete(id string) (*d.UserResponse, error) {
-    // update user data
+    // delete user data
     user, err := s.Store.Delete(*ParseUUID(id))
     if err != nil {
         return nil, err
@@ -186,6 +196,44 @@ func (s *UserService) Delete(id string) (*d.UserResponse, error) {
 
     // return response to handler layer
     return user.ConvertToResponse(), nil
+}
+
+// GetByEmail will send request to user datastore to get user credential data
+// based on its email
+func (s *UserService) GetByEmail(email string) (*d.UserCredential, error) {
+    // get user credential data
+    cred, err := s.Store.GetByEmail(email)
+    if err != nil {
+        return nil, err
+    }
+
+    return cred, nil
+}
+
+// IsUserExist will send request to datastore to check whether username or email
+
+// GetCredential will send request to user datastore to get user credential data
+func (s *UserService) GetCredential(username,passkey string) (*d.UserCredential, error) {
+    // get user credential data
+    cred, err := s.Store.GetCredential(username, passkey)
+    if err != nil {
+        return nil, err
+    }
+
+    return cred, nil
+}
+
+// IsUserExist will send request to datastore to check whether username or email
+// is already exist
+func (s *UserService) IsUserExist(username, email string) bool {
+    if !helper.EmailIsValid(email) {
+        logger.Errorf("IsUserExist input email invalid: %s", email)
+        return false
+    }
+
+    found, _ := s.Store.IsUserExist(username, email)
+
+    return found
 }
 
 // ParseUUID is wrapper and simplified version of func uuid.Parse(...) 

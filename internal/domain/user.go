@@ -77,6 +77,16 @@ func (u *User) ConvertToResponse() *UserResponse{
     }
 }
 
+// ConvertToCredential will convert user data to credential format
+func (u *User) ConvertToCredential() *UserCredential{
+    return &UserCredential{
+        ID : u.ID,
+        Username : u.Username,
+        PassKey : u.PassKey,
+        StatusID : u.StatusID,
+    }
+}
+
 // BeforeInsert will insert required data to User
 // func (u *User) BeforeInsert() {
 //     u.ID        = uuid.New()

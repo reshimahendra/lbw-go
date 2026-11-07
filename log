@@ -1,0 +1,2 @@
+INFO 2026-11-07T14:11:31+08:00 Dialing PostgreSQL server  host: localhost 
+INFO 2026-11-07T14:11:31+08:00 Exec  time: 145.401µs | commandTag:  | pid: 54278 | sql: ; | args: [] 

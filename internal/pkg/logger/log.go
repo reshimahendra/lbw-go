@@ -1,12 +1,13 @@
 /*
-   Logger module
-   - It will create logfile for the server
+Logger module
+- It will create logfile for the server
 */
 package logger
 
 import (
 	"bytes"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -17,28 +18,63 @@ import (
 )
 
 var (
-    logger = logrus.New()
-    goOS = runtime.GOOS
+	logger = logrus.New()
+	goOS   = runtime.GOOS
 
-    // get the root directory of our project
-    _, base, _, _ = runtime.Caller(0)
-    basePath = filepath.Join(filepath.Dir(base), "../../..")
+	// get the root directory of our project
+	_, base, _, _ = runtime.Caller(0)
+	basePath      = filepath.Join(filepath.Dir(base), "../../..")
 )
 
 // init will Initialize the logger setting
 func init() {
-    logFile := filepath.Join(basePath, "log", ".server.log")
+	// 1. Get the directory where the compiled binary is actually running
+	execPath, err := os.Executable()
+	if err != nil {
+		// Fallback to current working directory if path detection fails
+		execPath, _ = os.Getwd()
+	}
 
+	// If binary is in project_root/dist/server, EvalSymlinks resolves shortcuts
+	realPath, err := filepath.EvalSymlinks(execPath)
+	if err == nil {
+		execPath = realPath
+	}
+
+	// Set basePath to the directory containing the binary
+	basePath = filepath.Dir(execPath)
+
+	// 2. Ensure the log folder exists before logrus tries to touch it
+	logDir := filepath.Join(basePath, "log")
+	if err := os.MkdirAll(logDir, 0755); err != nil {
+		log.Fatalf("Failed to create log directory: %v", err)
+	}
+
+	// 3. Define the file path safely
+	logFile := filepath.Join(logDir, ".server.log")
+
+	// 4. Continue with your configuration
 	logger.Out = getWriter(logFile)
 	logger.Level = logrus.InfoLevel
 	logger.Formatter = &formatter{}
-
 	logger.SetReportCaller(true)
+	// logDir := filepath.Join(basePath, "log")
+	// if err := os.MkdirAll(logDir, 0755); err != nil {
+	// 	log.Fatalf("Failed to create log directory: %v", err)
+	// }
+
+	// logFile := filepath.Join(basePath, "log", ".server.log")
+
+	// logger.Out = getWriter(logFile)
+	// logger.Level = logrus.InfoLevel
+	// logger.Formatter = &formatter{}
+
+	// logger.SetReportCaller(true)
 }
 
 // SetLogLevel will set the log level mode
 func el(level logrus.Level) {
-    logger.Level = level
+	logger.Level = level
 }
 
 type Fields logrus.Fields

@@ -9,6 +9,7 @@ show-proof:
 run:
 	go run ./cmd/app/main.go
 build:
+	mv -f dist/server dist/server_$$(date +"%Y%m%d_%H%M%S") 2>/dev/null || true
 	go build -o ./dist/server -ldflags '-s -w' ./cmd/app/main.go
 tidy:
 	go mod tidy

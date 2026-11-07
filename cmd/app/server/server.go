@@ -49,7 +49,7 @@ func Run(){
     account.Router(pool, router)
 
     // run gin server
-    welcome("LotusBW", "http://127.0.0.1:8000", "-", 46) 
+    welcome("RESHI", "http://127.0.0.1:8000", "-", 46) 
     logger.Errorf("%v", router.Run(":8000"))
 
 }
